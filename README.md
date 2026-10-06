@@ -1,4 +1,68 @@
-# Welcome to your organization's demo respository
-This code repository (or "repo") is designed to demonstrate the best GitHub has to offer with the least amount of noise.
+# 머니 to 홈
 
-The repo includes an `index.html` file (so it can render a web page), two GitHub Actions workflows, and a CSS stylesheet dependency.
+내 자산·저축·대출로 목표할 수 있는 집을 지도에서 찾는 내 집 마련 시뮬레이터
+
+## 프로젝트 소개
+
+소득, 보유자산, 저축 계획과 대출 상품을 선택하면 지금 또는 10년 안에 구매를 목표로 할 수 있는 전남광주통합특별시의 아파트를 지도에 보여 주고, 그 집을 사려면 자금이 얼마나 더 필요한지 계산해 주는 서비스입니다.
+
+- 미래 집값을 예측하지 않습니다. 사용자가 고른 가격 변동 가정을 적용한 시뮬레이션입니다.
+- 대출 금액은 상품의 공개 조건으로 계산한 추정치이며, 실제 대출 여부와 한도는 금융기관 심사로 결정됩니다.
+- 지도에 표시되는 아파트는 판매 중인 매물이 아니라 실거래 기록이 있는 아파트입니다.
+
+## 서비스 흐름
+
+재무정보 입력 → 대출상품 선택 → 저축계획 설정 → 조건에 맞는 아파트 탐색 → 지도 표시 → 필요자금 계산
+
+## 주요 기능
+
+| 기능 | 내용 |
+|---|---|
+| 재무정보 입력 | 소득, 보유자산, 기존 대출, 월 저축 가능액, 목표 기간 입력 |
+| 대출상품 안내 | 한국주택금융공사, 카카오뱅크 대표 상품의 예상 대출금액과 월 상환액 |
+| 저축 계획 | 목표 기간까지의 누적 저축액과 집값 변동 가정 |
+| 아파트 탐색 | 실거래가 기준으로 조건에 맞는 아파트 검색 |
+| 지도 표시 | 검색된 아파트를 지도에 표시 |
+| 필요자금 계산 | 예상 필요자금, 부족자금, 필요한 월 저축액 |
+
+## 기술 스택
+
+| 구분 | 기술 |
+|---|---|
+| Frontend | HTML, CSS, JavaScript |
+| Backend | Python, FastAPI |
+| Database | MySQL |
+| Data | Pandas, 국토교통부 아파트 매매 실거래가 API |
+
+## 팀원
+
+| 이름 | 역할 | GitHub |
+|---|---|---|
+| 김해원 | 팀장 | [KHW1003](https://github.com/KHW1003) |
+| 김목산 | 미정 | [kimmoksan](https://github.com/kimmoksan) |
+| 박채은 | 미정 | [chaeeun](https://github.com/chaeeun) |
+| 안세환 | 미정 | [sehwan-An](https://github.com/sehwan-An) |
+
+## 폴더 구조
+
+```
+├─ docs/        프로젝트 문서
+├─ backend/     FastAPI 서버
+├─ frontend/    웹 화면
+└─ data/        데이터 수집·가공 스크립트
+```
+
+## 실행 방법
+
+(개발 시작 후 작성)
+
+## 협업 규칙
+
+- `main`: 발표·제출용 완성본. 직접 push하지 않습니다.
+- `develop`: 개발 통합 브랜치. PR은 이 브랜치로 보냅니다.
+- 작업 브랜치: `feature/기능명`, `docs/문서명`, `fix/버그명`
+- PR은 팀원 1명 이상의 승인을 받은 뒤 머지합니다.
+
+## 문서
+
+- [프로젝트 기획서](docs/01_project_overview.md)
