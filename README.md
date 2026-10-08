@@ -1,4 +1,100 @@
-# Welcome to your organization's demo respository
-This code repository (or "repo") is designed to demonstrate the best GitHub has to offer with the least amount of noise.
+# 머니 to 홈
 
-The repo includes an `index.html` file (so it can render a web page), two GitHub Actions workflows, and a CSS stylesheet dependency.
+내 자산·저축·대출로 목표할 수 있는 집을 지도에서 찾는 내 집 마련 시뮬레이터
+
+## 프로젝트 소개
+
+보유자산과 저축 계획, 대출 상품을 선택하면 지금 또는 10년 안에 구매를 목표로 할 수 있는 광주시의 아파트를 지도에 보여 주고, 그 집을 사려면 자금이 얼마나 더 필요한지 계산해 주는 서비스입니다.
+
+- 미래 집값을 예측하지 않습니다. 모든 금액을 현재 가치 기준으로 계산합니다.
+- 대출 금액은 상품의 공개 조건으로 계산한 추정치이며, 실제 대출 여부와 한도는 금융기관 심사로 결정됩니다.
+- 지도에 표시되는 아파트는 판매 중인 매물이 아니라 실거래 기록이 있는 아파트입니다.
+
+| 항목 | 내용 |
+| --- | --- |
+| 기간 | 2026.10.06 ~ (2주) |
+| 인원 | 4명 |
+| 대상 지역 | 광주시 |
+| 대상 주택 | 아파트 매매 |
+
+## 서비스 흐름
+
+재무정보 입력 → 대출상품 선택 → 저축 계획 → 아파트 탐색 → 지도 표시 → 필요자금 결과
+
+## 주요 기능
+
+| 기능 | 내용 |
+| --- | --- |
+| 재무정보 입력 | 나이, 연 소득, 현재 보유자산 입력 |
+| 대출상품 선택 | 한국주택금융공사, 카카오뱅크 대표 상품의 조건 안내, 예상 대출금액과 월 상환액 계산 |
+| 저축 계획 | 월 저축 가능액과 목표 기간으로 누적 저축액 계산 |
+| 아파트 탐색 | 실거래 평균가를 기준으로 지금 가능, 목표 기간 안에 가능, 자금 부족으로 구분 |
+| 지도 표시 | 검색된 아파트를 구분해서 지도에 표시 |
+| 필요자금 결과 | 필요자금, 부족·여유자금, 필요 월 저축액, 허용 상승률 |
+
+## 산출물
+
+| 일자 | 문서 | 내용 |
+| --- | --- | --- |
+| 10/06 | [프로젝트 기획서](docs/01_project_overview.md) | 주제, 배경, 목표, 범위 |
+| 10/07 | [요구사항 명세서](docs/02_requirements.md) | 기능 요구사항 122개, MoSCoW 우선순위, User Story, Task 분해 |
+
+## 기술 스택
+
+| 구분 | 기술 |
+| --- | --- |
+| Frontend | HTML, CSS, JavaScript |
+| Backend | Python, FastAPI |
+| Database | MySQL |
+| Data | Pandas, 국토교통부 아파트 매매 실거래가 API |
+
+## 팀원
+
+| 이름 | 역할 | GitHub |
+| --- | --- | --- |
+| 김해원 | 팀장 | [KHW1003](https://github.com/KHW1003) |
+| 김목산 | 미정 | [kimmoksan](https://github.com/kimmoksan) |
+| 박채은 | 미정 | [chaeeun](https://github.com/chaeeun) |
+| 안세환 | 미정 | [sehwan-An](https://github.com/sehwan-An) |
+
+## 폴더 구조
+
+```
+├─ docs/        프로젝트 문서
+├─ backend/     FastAPI 서버 (예정)
+├─ frontend/    웹 화면 (예정)
+└─ data/        데이터 수집·가공 스크립트 (예정)
+```
+
+## 실행 방법
+
+개발을 시작한 뒤 작성합니다.
+
+## 협업 규칙
+
+**브랜치**
+
+| 브랜치 | 용도 |
+| --- | --- |
+| `main` | 제출용 완성본. 직접 push하지 않습니다. |
+| `develop` | 개발 통합. PR은 이 브랜치로 보냅니다. |
+| `feature/기능명` | 기능 개발 |
+| `docs/문서명` | 문서 작업 |
+| `fix/버그명` | 버그 수정 |
+
+**커밋 메시지**
+
+`종류: 내용` 형식으로 씁니다. 예: `docs: 요구사항 명세서 추가`
+
+| 종류 | 쓰는 때 |
+| --- | --- |
+| `feat` | 새 기능 |
+| `fix` | 버그 수정 |
+| `docs` | 문서 |
+| `refactor` | 동작은 그대로 두고 코드 정리 |
+| `chore` | 설정, 폴더 구조 |
+
+**Pull Request**
+
+- 팀원 1명 이상의 승인을 받은 뒤 머지합니다.
+- 머지한 브랜치는 삭제합니다.
