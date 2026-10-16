@@ -47,5 +47,11 @@ app.include_router(scenario.router)
 app.include_router(auth.router)
 app.include_router(saved_results.router)
 
-# 화면. API를 모두 등록한 뒤 마지막에 연결한다. /api로 시작하지 않는 주소는 frontend 폴더의 파일을 준다.
-app.mount("/", StaticFiles(directory=FRONTEND_DIR, html=True), name="frontend")
+class FrontendFiles(StaticFiles):
+    """화면 파일. 브라우저가 쓸 때마다 바뀌었는지 서버에 묻게 한다. 안 바뀌었으면 304라 다시 받지 않는다."""
+    def file_response(self, *args, **kwargs):
+        response = super().file_response(*args, **kwargs)
+        response.headers["Cache-Control"] = "no-cache"
+        return response
+
+app.mount("/", FrontendFiles(directory=FRONTEND_DIR, html=True), name="frontend")
