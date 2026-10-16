@@ -115,6 +115,8 @@ const mapState = {
   byBounds: false, // 아파트를 지도에 보이는 영역으로 받고 있는가 (손으로 지도를 움직인 뒤). 아니면 구·동으로 받는다
   boundsTimer: null, // 움직임이 멈추기를 기다리는 타이머
   quietUntil: 0, // 이때(ms)까지의 확대·축소는 코드가 한 것이다. 영역으로 다시 받지 않는다
+  dropOnClose: false, // 아파트 창을 ✕로 닫는 중. 닫힐 때 말풍선을 푼다 (onSheetChange)
+  keepSheet: false, // 비슷한 아파트로 다른 동을 받는 중. 받은 자료에 보던 아파트가 없어도 창을 닫지 않는다 (openSimilar)
   tappedAt: 0, // 지도 위 표시를 마지막으로 누른 때 (ms)
   loadSeq: 0, // 아파트를 받는 요청의 번호. 늦게 온 앞의 응답을 버린다
   loadFailed: false, // 마지막으로 아파트를 받다가 실패했는가. 목록 자리에 오류가 그려져 있다
@@ -172,6 +174,10 @@ function createMap(center) {
   });
   // 손으로 끌어 옮기면 보이는 영역의 아파트로 바꾼다 (FR-MAP-22). 코드가 옮길 때는 이 사건이 나지 않는다.
   kakao.maps.event.addListener(map, 'dragstart', adoptPreload); // 끌기 시작하면 미리 받아 둔 주변을 바로 그린다
+  // 창을 닫은 뒤 남겨 둔 말풍선(keepOnClose)은 지도를 끌면 푼다
+  kakao.maps.event.addListener(map, 'dragstart', () => {
+    if (sheet.phase === 'closed' && mapState.selectedId !== null) selectMarker(null);
+  });
   kakao.maps.event.addListener(map, 'click', onMapClick);
   kakao.maps.event.addListener(map, 'dragend', () => scheduleBoundsLoad());
   kakao.maps.event.addListener(map, 'idle', () => {
@@ -795,10 +801,13 @@ function selectMarker(id) {
   // 고른 아파트가 묶음 뒤에 가려져 있으면 다시 그려 앞으로 꺼낸다 (shownApartments가 고른 아파트를 앞에 둔다)
   const hidden = id !== null && mapState.mode === 'apartment' && !mapState.markers.some((overlay) => overlay.apartmentId === id);
   if (hidden && mapState.data && mapState.data.apartments.some((a) => a.id === id && hasCoord(a))) renderMarkers();
-  document.querySelectorAll('#kakao-map .marker').forEach((el) => {
-    el.classList.toggle('marker--selected', Number(el.dataset.id) === id);
+  // 카카오맵은 화면 밖의 말풍선을 문서에서 떼어 둔다. 문서에서 찾지 않고 말풍선마다 바꿔야
+  // 화면 밖의 아파트를 고른 뒤 그리로 옮겼을 때도 골라진 모양으로 나온다 (비슷한 아파트, ‹ ›)
+  mapState.markers.forEach((overlay) => {
+    const element = overlay.getContent();
+    if (element && element.classList.contains('marker')) element.classList.toggle('marker--selected', overlay.apartmentId === id);
+    overlay.setZIndex(overlay.apartmentId === id ? 3 : 2);
   });
-  mapState.markers.forEach((overlay) => overlay.setZIndex(overlay.apartmentId === id ? 3 : 2));
 }
 
 // ───────── 아래 창 ─────────
@@ -989,6 +998,52 @@ async function onSearchPick(apartment) {
   sheet.show('30', 'apartment');
 }
 
+// 비슷한 아파트의 카드를 누름 (apartment.js의 pickSimilar). 같은 동이든 다른 동이든 여기서 처리한다.
+// apartment는 A-24 응답의 아파트, areaBand는 카드에 보이던 면적대다.
+//   - 창은 닫지 않고 보던 단계 그대로 두고 그 아파트로 바꿔 보여 준다.
+//   - 다른 동이면 그 동의 자료를 받는다. 동의 가운데로 먼저 옮기지 않는다 (지도가 두 번 움직이지 않게).
+//     말풍선이 보이지 않을 만큼 넓게 보고 있을 때만 동을 보는 수준으로 맞춘다.
+//   - 지도는 자료를 받은 뒤 한 번만 setCenter로 옮긴다 (창이 닫혔다 다시 열리지 않으므로 창 크기도 그대로다).
+//   - 자금이 부족한 아파트면 자금 부족 표시를 켠다 (onSearchPick과 같다).
+async function openSimilar(apartment, areaBand) {
+  regionPicker.close();
+  filterSheet.close();
+  if (apartment.category === 'lack' && store.get('map').show_lack !== true) {
+    store.set('map', { show_lack: true });
+    renderLackSwitch();
+  }
+  const findIn = () => mapState.data && mapState.data.apartments.find((item) => item.id === apartment.id);
+  let loaded = false;
+  if (!findIn()) {
+    useRegion();
+    mapState.region = { gu: apartment.gu, dong: apartment.dong };
+    store.set('map', { gu: apartment.gu, dong: apartment.dong });
+    renderRegionName();
+    if (markerMode() !== 'apartment') {
+      quietZoom(500);
+      mapState.map.setLevel(DONG_LEVEL);
+    }
+    mapState.keepSheet = true;
+    try {
+      await loadData();
+    } finally {
+      mapState.keepSheet = false;
+    }
+    loaded = true;
+  }
+  // 받는 사이에 창을 닫았으면 그대로 둔다
+  if (sheet.mode !== 'apartment' || sheet.phase === 'closing' || sheet.phase === 'closed') return;
+  const found = findIn();
+  const shown = found || apartment;
+  const areaIndex = Math.max(shown.areas.findIndex((area) => area.area_band === areaBand), 0);
+  aptPanel.show(shown, areaIndex, { listPlace: aptPanel.listPlace ? listPlace() : aptPanel.listPlace });
+  document.querySelector('.apt__panels').scrollTop = 0;
+  const onMap = Boolean(found && hasCoord(found));
+  selectMarker(onMap ? found.id : null);
+  if (onMap) centerSelected(); // 한 번에 옮긴다 (setCenter)
+  else if (loaded && regionCenter(mapState.region)) mapState.map.setCenter(toLatLng(regionCenter(mapState.region))); // 좌표가 없으면 그 동의 가운데
+}
+
 // 목록 보기 → 목록 80% (P-06 ⑤). 목록은 이미 그려 두었으므로 창만 연다.
 function openList() {
   if (!mapState.data && !mapState.loadFailed) return; // 받지 못했으면 목록 자리에 오류와 "다시 시도"가 있다
@@ -1050,8 +1105,9 @@ function panToRemaining() {
 
 // 지도의 크기가 바뀌었으면(sheet.css) 카카오맵에 알린다. 바뀌었으면 true.
 // 창이 다 움직였으면 고른 아파트를 가운데에 둔다 (이미 그 자리에 와 있어서 튀지 않는다).
-// 그 밖에는 지도의 그림이 화면에서 움직이지 않게 맞춘다.
-// (카카오맵은 크기가 바뀌면 가운데 좌표를 새 가운데로 옮긴다. 위쪽이 그대로 있도록 그만큼 되돌린다.)
+// 그 밖에는 지도의 그림이 화면에서 움직이지 않게 둔다.
+// (카카오맵은 relayout()을 해도 왼쪽 위가 그대로 있어서 그림이 움직이지 않는다. 2026-10-15에 실제 지도로 확인.
+//  예전에는 가운데가 그대로라고 보고 크기 차이의 절반만큼 되돌렸는데, 그 때문에 창을 닫을 때마다 지도가 위로 튀었다.)
 function fitMapToSheet() {
   const { map } = mapState;
   if (!map) return false;
@@ -1062,21 +1118,34 @@ function fitMapToSheet() {
   map.relayout();
   mapState.mapHeight = after;
   const settled = sheet.phase === 'open' && !sheet.moving;
-  if (!(settled && centerSelected())) {
-    const point = new kakao.maps.Point(box.clientWidth / 2, after / 2 + (after - before) / 2);
-    map.setCenter(map.getProjection().coordsFromContainerPoint(point));
-  }
+  if (settled) centerSelected();
   renderScale();
   return true;
+}
+
+// 닫기 시작한 창이 80%나 전체의 아파트 창이고 고른 말풍선이 있는가.
+// 30%에서 닫을 때는 지도가 보이던 그대로라서 지금처럼 푼다. 지도를 눌러 닫으면 closeOverlays가 먼저 푼다.
+function keepOnClose() {
+  return sheet.mode === 'apartment' && (sheet.stage === '80' || sheet.stage === 'full') && selectedApartment() !== null;
 }
 
 // 아래 창의 상태가 바뀔 때 (sheet.js가 움직임의 처음과 끝에 부른다)
 //   지도의 크기가 바뀌었으면 맞추고, 움직이는 중이면 고른 아파트를 남을 자리의 가운데로 옮긴다.
 //   크기도 그대로이고 움직이지도 않으면(열린 채 다른 말풍선을 누름) 그 아파트로 부드럽게 옮긴다.
-//   닫기 시작하면 고른 말풍선을 푼다.
+//   닫기 시작하면 고른 말풍선을 푼다. 다만 아파트 창을 80%나 전체로 보다가 닫으면
+//   그 아파트를 지도의 가운데로 옮기고 골라진 채로 둔다 (keepOnClose). 그때는 지도가 거의 가려져 있어서
+//   닫은 뒤에야 지도를 보므로, 어느 말풍선을 보고 있었는지 알 수 있게 한다. 지도를 누르거나 끌면 풀린다.
 function onSheetChange() {
   if (sheet.phase === 'closed') return;
-  if (sheet.phase === 'closing') selectMarker(null);
+  if (sheet.phase === 'closing') {
+    const keep = keepOnClose();
+    const drop = !keep || mapState.dropOnClose; // ✕로 닫았으면 옮긴 뒤 푼다
+    mapState.dropOnClose = false;
+    fitMapToSheet(); // 닫히는 동안 지도는 화면을 다 쓴다
+    if (keep) centerSelected(); // 바로 옮긴다. 실제 카카오맵의 panTo는 이미 화면 안에 있는 곳으로는 움직이지 않았다 (2026-10-15 확인)
+    if (drop) selectMarker(null);
+    return;
+  }
   const resized = fitMapToSheet();
   if (sheet.moving) panToRemaining();
   else if (!resized) centerSelected({ smooth: true });
@@ -1090,7 +1159,7 @@ function syncApartmentSheet() {
   const same = mapState.data.apartments.find((item) => item.id === aptPanel.apartment.id);
   if (!same) {
     // 지도를 움직여 보던 아파트가 화면 밖으로 나갔으면 창은 그대로 둔다. 다른 지역을 고른 것이면 닫는다.
-    if (!mapState.byBounds) sheet.close();
+    if (!mapState.byBounds && !mapState.keepSheet) sheet.close();
     return;
   }
   // aptPanel.show는 아파트 정보 탭으로 돌아간다. 보던 탭에 머물도록 값만 바꿔 다시 그린다.
@@ -1219,9 +1288,13 @@ function bindEvents() {
     order: sheetOrder,
     basis: basisText,
     onMove: moveToApartment,
-    onPickSimilar: onSearchPick, // 비슷한 아파트의 카드 (similar.js). 지도에 없는 아파트면 그 구·동으로 옮겨 연다
+    onPickSimilar: openSimilar, // 비슷한 아파트의 카드 (similar.js). 지도에 없는 아파트면 그 구·동의 자료를 받아 보던 단계 그대로 연다
     onBackToList: backToList,
-    onClose: () => sheet.close(),
+    // ✕로 닫으면 지도는 그 아파트로 옮기되 말풍선은 푼다 (onSheetChange). 뒤로 가기·끌어 내리기로 닫으면 골라진 채로 둔다
+    onClose: () => {
+      mapState.dropOnClose = true;
+      sheet.close();
+    },
     onUnitChange: () => {
       renderUnitButton();
       renderMarkers();
@@ -1580,7 +1653,7 @@ function closeOverlays() {
   if (sheet.phase !== 'closed') {
     selectMarker(null);
     sheet.close();
-  }
+  } else if (mapState.selectedId !== null) selectMarker(null); // 창을 닫은 뒤 남겨 둔 말풍선 (keepOnClose)
   filterSheet.close();
   regionPicker.close();
 }

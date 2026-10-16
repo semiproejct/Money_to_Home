@@ -7,7 +7,7 @@
 // 80% 이상에는 탭(아파트 정보, 시나리오)이 보인다.
 //   아파트 정보 (P-06 ⑦): 아파트 한 곳 API(A-06, GET /api/apartments/{id})로 채운다.
 //     창이 80% 이상이고 아파트 정보 탭이 보일 때 처음 한 번 부른다. 받은 것은 아파트마다 기억해 두고 다시 부르지 않는다.
-//     여덟 줄: 지번 주소, 도로명 주소, 준공 연도, 면적, 실거래 평균가, 최근 1년 거래, 세대수, 가격 범위.
+//     여덟 줄: 지번 주소, 도로명 주소, 준공 연도, 면적, 실거래 평균가, 최근 1년 거래(집계 기간), 세대수, 가격 범위.
 //     순서는 목업 A9(4010:1111), C6(4022:1188)을 따른다. 1차 여섯 줄 뒤에 2차 두 줄을 붙인다.
 //     세대수는 "1,234세대 (2026년 8월 기준)", 가격 범위는 "2억 7,000만 ~ 3억 3,000만 원" (FR-APT-15, 16).
 //     값을 모르는 줄(도로명 주소, 준공 연도, 세대수가 비어 있음)은 그리지 않는다.
@@ -20,8 +20,8 @@
 //   비슷한 아파트 (3차, FR-APT-17, T-APT-11. 목업 C6 4022:1301): 정보 줄 아래에 김목산의 similar.js가 그린다.
 //     이 파일은 자리(#apt-similar)를 만들고 similarView.load를 부르기만 한다. 아파트·면적·조건이 그대로면 다시 부르지 않는다.
 //     similar.js가 있으면 정보 줄 위에 "기본 정보" 제목을 붙인다 (C6. 묶음이 둘이 되므로).
-//     카드를 누르면 그 아파트로 넘어간다. 지금 지도에 있는 아파트면 ‹ ›와 같이 넘기고,
-//     없으면(다른 동 등) map-view.js가 넘겨준 handlers.onPickSimilar를 부른다 (없으면 아무것도 하지 않는다).
+//     카드를 누르면 그 아파트로 넘어간다. map-view.js가 넘겨준 handlers.onPickSimilar를 부른다
+//     (없으면 지금 지도에 있는 아파트만 ‹ ›와 같이 넘긴다).
 //     similar.js를 불러오지 않았으면 아무것도 하지 않는다.
 //   좌표가 없는 아파트 (P-06 ⑱, 목업 4009:492): 이름과 배지 옆에 "위치 없음"을 붙이고,
 //     아파트 정보 탭의 맨 위에 점선 안내를 둔다. 목록에서 열었을 때만 생긴다 (지도에는 표시가 없다).
@@ -353,10 +353,15 @@ const aptPanel = {
   },
 
   // 비슷한 아파트의 카드를 누름. apartment는 A-24 응답의 아파트, areaBand는 카드에 보이던 면적대
-  //   지금 지도에 있는 아파트면 ‹ ›와 같이 그 아파트로 넘긴다 (그 면적을 고르고, 아파트 정보 탭 맨 위로)
-  //   없으면(다른 동이거나 조건 밖) map-view.js의 onPickSimilar에 맡긴다
+  //   map-view.js의 onPickSimilar에 맡긴다. 같은 동이든 다른 동이든 지도를 한 번에(setCenter) 옮긴다.
+  //   (‹ ›의 onMove는 panTo로 부드럽게 옮기는데, 실제 카카오맵의 panTo는 80%의 좁은 지도에서 가운데에 멈추지 않을 때가 있었다)
+  //   onPickSimilar가 없으면 지금 지도에 있는 아파트만 ‹ ›와 같이 넘긴다 (그 면적을 고르고, 아파트 정보 탭 맨 위로)
   pickSimilar(apartment, areaBand) {
     const { handlers } = aptPanel;
+    if (typeof handlers.onPickSimilar === 'function') {
+      handlers.onPickSimilar(apartment, areaBand);
+      return;
+    }
     const order = handlers.order ? handlers.order(aptPanel.apartment) : [];
     const known = order.find((item) => item.id === apartment.id);
     if (known) {
@@ -364,9 +369,7 @@ const aptPanel = {
       aptPanel.show(known, areaIndex, { listPlace: aptPanel.listPlace });
       handlers.onMove(known);
       document.querySelector('.apt__panels').scrollTop = 0;
-      return;
     }
-    if (typeof handlers.onPickSimilar === 'function') handlers.onPickSimilar(apartment, areaBand);
   },
 
   // ───────── 아파트 정보 탭 (P-06 ⑦, A-06) ─────────
@@ -429,7 +432,7 @@ const aptPanel = {
       ['준공 연도', detail.built_year === null ? null : `${detail.built_year}년`],
       ['면적', format.area(area.supply_area, area.exclusive_area, aptPanel.unit())],
       ['실거래 평균가', format.won(area.avg_price)],
-      ['최근 1년 거래', `${format.comma(area.trade_count)}건`],
+      ['최근 1년 거래', aptPanel.tradeText(area)],
       ['세대수', aptPanel.householdsText(detail)],
       ['가격 범위', aptPanel.priceRangeText(area)],
     ];
@@ -457,6 +460,18 @@ const aptPanel = {
     if (!detail.households_base_date) return count;
     const [year, month] = detail.households_base_date.split('-');
     return `${count} (${year}년 ${Number(month)}월 기준)`;
+  },
+
+  // 최근 1년 거래 "14건 (2025년 10월 ~ 2026년 9월)". 괄호는 집계 기간(A-06의 period_start ~ period_end)이다.
+  // 줄을 늘리지 않고 이 줄에 붙인다 (와이어프레임의 여덟 줄 그대로). 기간을 모르면 괄호를 뺀다
+  tradeText(area) {
+    const count = `${format.comma(area.trade_count)}건`;
+    if (!area.period_start || !area.period_end) return count;
+    const month = (text) => {
+      const [year, mm] = text.split('-');
+      return `${year}년 ${Number(mm)}월`;
+    };
+    return `${count} (${month(area.period_start)} ~ ${month(area.period_end)})`;
   },
 
   // 가격 범위 "2억 7,000만 ~ 3억 3,000만 원" (목업 2038:566). 앞 금액의 "원"은 뺀다
