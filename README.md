@@ -2,6 +2,13 @@
 
 내 자산·저축·대출로 목표할 수 있는 집을 지도에서 찾는 내 집 마련 시뮬레이터
 
+**바로 써 보기: https://money-to-home.onrender.com/**
+
+<img src="docs/images/qr.png" width="160" alt="머니 to 홈 접속 QR코드">
+
+- 휴대폰 카메라로 QR을 찍으면 바로 열립니다. PC에서는 F12 → 기기 툴바(Ctrl + Shift + M)로 모바일 화면도 볼 수 있습니다.
+- 무료 서버라 한동안 접속이 없으면 잠듭니다. 첫 화면이 30~60초 늦게 뜰 수 있습니다.
+
 ## 프로젝트 소개
 
 보유자산과 저축 계획, 대출 상품을 선택하면 지금 또는 10년 안에 구매를 목표로 할 수 있는 광주 5개 구의 아파트를 지도에 보여 주고, 그 집을 사려면 자금이 얼마나 더 필요한지 계산해 주는 서비스입니다.
@@ -12,7 +19,7 @@
 
 | 항목 | 내용 |
 | --- | --- |
-| 기간 | 2026.10.06 ~ (2주) |
+| 기간 | 2026.10.06 ~ 10.21 (16일) |
 | 인원 | 4명 |
 | 대상 지역 | 광주 5개 구 (전남광주통합특별시의 동구, 서구, 남구, 북구, 광산구. 옛 광주광역시) |
 | 대상 주택 | 아파트 매매 |
@@ -31,6 +38,16 @@
 | 아파트 탐색 | 실거래 평균가를 기준으로 지금 가능, 목표 기간 안에 가능, 자금 부족으로 구분 |
 | 지도 표시 | 지도 전체 화면에 아파트를 구분해서 표시하고, 아래에서 올라오는 창에 목록과 아파트 정보를 표시 |
 | 필요자금 결과 | 필요자금, 부족·여유자금, 필요 월 저축액, 허용 상승률 |
+| 회원 · 마이페이지 | 가입 · 로그인 · 비밀번호 변경 · 탈퇴, 재무정보 3칸과 찜한 시나리오를 조회 · 수정 · 삭제 |
+| 지도 부가 기능 | 조건 검색(면적 · 평균가 · 준공 연도), 이름 검색, 지도 영역 검색, 구 · 동 경계, 로드뷰, 주변 시설과 도보 시간, 비슷한 아파트, 공유(링크 · QR) |
+
+| 숫자로 보면 | |
+| --- | --- |
+| 아파트 · 실거래 | 1,055곳 · 17,268건 (광주 5개 구, 최근 12개월) |
+| REST API | 35개 |
+| DB 표 | 10개 |
+| 자동 테스트 | 333개 |
+| 기능 요구사항 | 159개 |
 
 ## 산출물
 
@@ -42,9 +59,9 @@
 | 10/08 | [화면 설계서](docs/03_ui_design.md) | 화면 목록, 공통 구조, 입력 화면과 지도 화면의 동작, 면적 표기, 와이어프레임 링크 |
 | 10/11 | [와이어프레임 설명서](docs/03_ui_design_wireframe.md) | 와이어프레임 110장의 그림과 한 장마다의 설명 (본 와이어프레임 109장, 보류 1장) |
 | 10/13 | [Figma 목업](https://www.figma.com/design/TSra3U9pIFYKxXvSNS4pu7/money-to-home-mockup?node-id=2034-2) | 모바일 화면의 목업. 색, 글자, 여백 같은 모양의 기준. 섹션 "확정 목업 v3"을 본다. |
-| 10/11 | [DB 설계서](docs/04_database_design.md) | 공식 초안. 표 8개와 관계도(ERD), 칸 정의, 테이블 생성 스크립트([db/schema.sql](db/schema.sql)) |
-| 10/11 | [API 명세서](docs/05_api_spec.md) | 초안. REST API 후보 26개, 공통 규칙, 화면과 API의 대응. 구조에 관한 열 가지는 정함 |
-| 10/11 | [아키텍처 문서](docs/06_architecture.md) | 초안. 전체 구성, 기술 스택, 폴더 구조, 만드는 순서, 검토 결과 |
+| 10/11 ~ 10/21 | [DB 설계서](docs/04_database_design.md) | 표 10개와 관계도(ERD), 칸 정의, 테이블 생성 스크립트([db/schema.sql](db/schema.sql)) |
+| 10/11 ~ 10/21 | [API 명세서](docs/05_api_spec.md) | REST API, 공통 규칙, 화면과 API의 대응 |
+| 10/11 | [아키텍처 문서](docs/06_architecture.md) | 전체 구성, 기술 스택, 폴더 구조, 만드는 순서, 검토 결과 |
 
 ## 기술 스택
 
@@ -52,9 +69,11 @@
 | --- | --- |
 | Frontend | HTML, CSS, JavaScript |
 | Backend | Python, FastAPI, SQLAlchemy |
-| Database | MariaDB 11.4 (MySQL 호환) |
-| Data | Pandas, 국토교통부 아파트 매매 실거래가 API |
-| Map | 카카오맵 API |
+| Database | MariaDB 11.4 (로컬), MySQL 8 (배포, Aiven) |
+| Data | Pandas, 국토교통부 실거래가 · 버스정류장, 건축물대장, 카카오 로컬 API |
+| Map | 카카오맵 JS SDK (지도, 경계, 로드뷰) |
+| 배포 | Render (서버), Aiven (DB) 무료 플랜 |
+| 테스트 · 협업 | pytest, Git · GitHub (main / develop / feature, PR 검토) |
 
 ## 팀원
 
@@ -62,7 +81,7 @@
 | --- | --- | --- |
 | 김해원 | 팀장. 입력과 공통 (재무정보, 저축 계획, 문서, 통합) | [KHW1003](https://github.com/KHW1003) |
 | 김목산 | 자료와 탐색 (실거래 자료 적재, 아파트 찾기, 목록) | [kimmoksan](https://github.com/kimmoksan) |
-| 박채은 | 대출과 계산 (계산 모듈, 대출상품, 시나리오) | [chaeeun](https://github.com/chaeeun) |
+| 박채은 | 대출과 계산 (계산 모듈, 대출상품, 시나리오, 마이페이지) | [chaeeun](https://github.com/chaeeun) |
 | 안세환 | 지도와 아파트 창 (좌표 변환, 지도, 아래 창, 아파트 정보) | [sehwan-An](https://github.com/sehwan-An) |
 
 네 명 모두 화면, 서버, DB를 다 씁니다. 할 일의 순서는 [역할 분담](docs/roles.md)에 있습니다.
@@ -93,6 +112,7 @@
 
 1. `.env.example`을 복사해 `.env`로 이름을 바꾸고 값을 채웁니다. `.env`는 저장소에 올리지 않습니다.
 2. MariaDB 11.4에서 `db/schema.sql`과 `db/seed_loan_products.sql`을 차례로 실행합니다. HeidiSQL에서는 [파일] > [SQL 파일 불러오기]로 열고 F9를 누릅니다.
+   - 10-21 이전에 DB를 만든 사람은 `db/migrate_20261021_multi_profile.sql`을 한 번 실행합니다 (재무정보 3칸). 실행하지 않으면 시작 화면에 "인터넷 연결" 오류가 납니다.
 3. 가상 환경을 만들고 라이브러리를 설치합니다.
 
 ```
@@ -121,6 +141,17 @@ uvicorn backend.main:app --reload --port 8000
 
 6. 브라우저에서 `http://localhost:8000`을 엽니다. 주소에 `frontend`를 넣지 않습니다. API 목록은 `http://localhost:8000/docs`, 상태 확인은 `http://localhost:8000/api/health`입니다.
 7. 자동 테스트는 `pytest`로 돌립니다.
+
+## 배포 (무료)
+
+| 부분 | 서비스 | 설정 |
+| --- | --- | --- |
+| 서버 | [Render](https://render.com) Free Web Service | Branch `main`, Build `pip install -r requirements.txt`, Start `uvicorn backend.main:app --host 0.0.0.0 --port $PORT` |
+| DB | [Aiven](https://aiven.io) Free MySQL | 로컬 DB를 HeidiSQL로 SQL 내보내기 → Aiven에 실행 |
+
+- Render 환경 변수에 `.env`의 값을 넣습니다. DB 값은 Aiven 것으로, `DB_SSL=true`, `PYTHON_VERSION=3.12.10`을 더합니다. CA 인증서를 쓰려면 Secret File(`ca.pem`)과 `DB_SSL_CA=/etc/secrets/ca.pem`.
+- 카카오 개발자 콘솔의 사이트 도메인에 배포 주소를 등록해야 지도가 뜹니다.
+- `main`에 머지하면 Render가 자동으로 다시 배포합니다. DB 구조를 바꾸는 마이그레이션 SQL은 Aiven에도 직접 실행합니다.
 
 ## 협업 규칙
 
