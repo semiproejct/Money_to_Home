@@ -15,6 +15,8 @@ router에서는 아래처럼 세션을 받아 services의 함수에 넘긴다.
 - SQL 문장에 값을 직접 붙이지 않는다. select(...).where(...)처럼 쓰면 값이 매개변수로 넘어간다 (NFR-09).
 - 요청이 오류 없이 끝나면 저장(commit)하고, 오류가 나면 되돌린다(rollback). services에서 commit하지 않는다.
 """
+import ssl
+
 import pymysql
 from pymysql.cursors import DictCursor
 from sqlalchemy import URL, create_engine
@@ -32,8 +34,23 @@ DATABASE_URL = URL.create(
     query={"charset": "utf8mb4"},
 )
 
+
+
+def ssl_options() -> dict | None:
+    """DB_SSL=true면 PyMySQL에 넘길 SSL 설정. 아니면 None (로컬 MariaDB).
+
+    DB_SSL_CA에 CA 인증서 파일이 있으면 서버 인증서를 확인한다. 없으면 암호화만 하고 확인은 하지 않는다.
+    """
+    if not settings.db_ssl:
+        return None
+    if settings.db_ssl_ca:
+        return {"ca": settings.db_ssl_ca}
+    return {"check_hostname": False, "verify_mode": ssl.CERT_NONE}
+
+
 # 접속은 처음 쓸 때 한다. 이 파일을 불러오는 것만으로는 DB에 붙지 않는다.
-engine = create_engine(DATABASE_URL, pool_pre_ping=True)
+_ssl = ssl_options()
+engine = create_engine(DATABASE_URL, pool_pre_ping=True, connect_args={"ssl": _ssl} if _ssl else {})
 SessionLocal = sessionmaker(bind=engine, autoflush=False, expire_on_commit=False)
 
 
@@ -68,5 +85,6 @@ def connect():
         database=settings.db_name,
         charset="utf8mb4",
         cursorclass=DictCursor,
+        ssl=ssl_options(),
         autocommit=False,
     )
