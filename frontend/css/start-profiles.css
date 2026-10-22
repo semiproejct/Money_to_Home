@@ -1,0 +1,751 @@
+/* 로그인한 시작 화면: 재무정보 3칸 + 찜한 시나리오 (2026-10-21, js/start-profiles.js). 담당: 박채은
+   화면 설계서 4.3.1. 팀장님이 확인한 미리보기 시안 A의 모양이다. 색과 크기는 common.css의 이름을 먼저 쓴다.
+
+   profile-   재무정보 칸, 추가 · 수정 · 삭제 창
+   saved-     찜한 시나리오 (칩, 카드, ♥). 카드 글자는 saved.css의 카드와 같은 이름(saved__card…)을 쓰되 이 파일에서 모양을 정한다
+   start-switch  오른쪽 위 "찜한 시나리오 보기 ↓" / "↑ 재무정보 보기" */
+
+/* ───────── 위 · 아래로 오가는 글자 버튼 ───────── */
+.start-switch-row {
+  display: flex;
+  justify-content: flex-end;
+  margin: -8px -14px 12px 0; /* 바탕이 없으니 글자 끝을 내용 오른쪽 끝에 맞춘다 */
+}
+
+.start-switch {
+  display: inline-flex;
+  align-items: center;
+  height: 34px;
+  padding: 0 14px;
+  border: 0;
+  border-radius: var(--radius-pill);
+  background: transparent;
+  color: var(--color-text-sub);
+  font-family: inherit;
+  font-size: var(--text-label);
+  font-weight: var(--font-bold);
+  cursor: pointer;
+}
+
+.start-switch:hover {
+  color: var(--color-text);
+}
+
+.start-switch:focus-visible {
+  outline: 2px solid var(--color-primary);
+  outline-offset: 2px;
+}
+
+/* ───────── 재무정보 칸 ───────── */
+.profile-slots {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin-top: 20px;
+}
+
+.profile-card {
+  display: flex;
+  flex-direction: column;
+  padding: 6px 18px 12px;
+  border-radius: var(--radius-card);
+  background: var(--color-bg-sub);
+  box-shadow: inset 0 0 0 2px transparent;
+}
+
+.profile-card--on {
+  background: var(--color-primary-soft);
+  box-shadow: inset 0 0 0 2px var(--color-primary);
+}
+
+.profile-card__head {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 36px;
+}
+
+.profile-card__no {
+  display: flex;
+  flex: 0 0 24px;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+  border-radius: 12px;
+  background: var(--color-line);
+  color: var(--color-text-sub);
+  font-size: var(--text-help);
+  font-weight: var(--font-bold);
+}
+
+.profile-card--on .profile-card__no {
+  background: var(--color-primary);
+  color: var(--color-on-primary);
+}
+
+.profile-card__name {
+  overflow: hidden;
+  font-size: var(--text-item);
+  font-weight: var(--font-bold);
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+.profile-icon-button {
+  display: flex;
+  flex: 0 0 36px;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  padding: 0;
+  border: 0;
+  border-radius: 10px;
+  background: transparent;
+  color: var(--color-text-sub);
+  cursor: pointer;
+}
+
+.profile-icon-button--ok {
+  background: var(--color-primary);
+  color: var(--color-on-primary);
+}
+
+.profile-icon-button--cancel {
+  background: var(--color-line);
+}
+
+/* 칸 오른쪽 위의 "수정  삭제" */
+.profile-card__tools {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  margin-left: auto;
+}
+
+.profile-card__tool {
+  height: 36px;
+  padding: 0 6px;
+  border: 0;
+  background: transparent;
+  color: var(--color-text-sub);
+  font-family: inherit;
+  font-size: var(--text-help);
+  font-weight: var(--font-medium);
+  text-decoration: underline;
+  cursor: pointer;
+}
+
+/* 이름을 그 자리에서 바꾸기 (✓ ✕, 10자까지) */
+.profile-card__rename {
+  display: flex;
+  flex: 1;
+  align-items: center;
+  gap: 4px;
+  min-width: 0;
+}
+
+.profile-card__input {
+  flex: 1;
+  min-width: 0;
+  height: 36px;
+  padding: 0 10px;
+  border: 1.5px solid var(--color-primary);
+  border-radius: 10px;
+  background: var(--color-bg);
+  color: var(--color-text);
+  font-family: inherit;
+  font-size: var(--text-body);
+  font-weight: var(--font-bold);
+  outline: none;
+}
+
+/* 자주 바뀌는 값 넷을 크게, 나머지 셋은 선 아래 한 줄 */
+.profile-card__body {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-top: 6px;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: var(--color-text);
+  font-family: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+
+.profile-card__grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px 12px;
+}
+
+.profile-card__cell {
+  display: flex;
+  flex-direction: column;
+}
+
+.profile-card__label {
+  color: var(--color-text-sub);
+  font-size: var(--text-help);
+}
+
+.profile-card__value {
+  font-size: var(--text-button);
+  font-weight: var(--font-bold);
+}
+
+.profile-card__minor {
+  padding-top: 10px;
+  border-top: 1px solid var(--color-line);
+  color: var(--color-text-sub);
+  font-size: var(--text-help);
+}
+
+/* 빈 칸 "+ 재무정보 N 추가" */
+.profile-add {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  height: 52px;
+  border: 1px dashed var(--color-line-strong);
+  border-radius: var(--radius-card);
+  background: var(--color-bg);
+  color: var(--color-text);
+  font-family: inherit;
+  font-size: var(--text-body);
+  font-weight: var(--font-medium);
+  cursor: pointer;
+}
+
+.profile-add svg {
+  color: var(--color-primary);
+}
+
+.start__go {
+  width: 100%;
+}
+
+/* ───────── 아래에서 올라오는 창 (추가 · 수정, 삭제 확인). 웹은 가운데 ───────── */
+.profile-dim {
+  position: fixed;
+  inset: 0;
+  z-index: 40;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  align-items: center;
+  background: rgba(0, 0, 0, 0.4);
+  overscroll-behavior: contain;
+}
+
+.profile-sheet {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  width: 100%;
+  max-width: var(--page-width);
+  max-height: 88vh;
+  overflow-y: auto;
+  padding: 12px var(--page-padding) 24px;
+  border-radius: 20px 20px 0 0;
+  background: var(--color-bg);
+  overscroll-behavior: contain;
+}
+
+@media (min-width: 1200px) {
+  .profile-dim {
+    justify-content: center;
+  }
+
+  .profile-sheet {
+    max-width: var(--web-page-width);
+    border-radius: 20px;
+    justify-content: center;
+  }
+
+  /* 웹의 추가 · 수정 창은 위에서부터 화면 높이를 다 채운다 (2026-10-21).
+     삭제 확인 창(div.profile-sheet)은 지금처럼 가운데 작은 창 */
+  .profile-dim:has(> form.profile-sheet) {
+    justify-content: flex-start;
+  }
+
+  form.profile-sheet {
+    min-height: 100vh;
+    max-height: 100vh;
+    border: none;
+    border-radius: 0;
+  }
+
+  /* 화면 높이를 다 채우는 창이라 끌어내리는 손잡이는 숨긴다 */
+  form.profile-sheet .profile-sheet__handle {
+    display: none;
+  }
+}
+
+/* 창이 열린 동안 뒤 화면은 스크롤되지 않는다.
+   뒤 화면(body)의 너비와 높이를 부모(html)의 100%로 고정하고 넘치는 부분은 숨긴다.
+   보던 위치는 js/start-profiles.js의 lock()이 body 안에서 그대로 보여 준다 */
+html.profile-lock {
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  overscroll-behavior: none;
+}
+
+html.profile-lock body {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  overscroll-behavior: none;
+}
+
+.profile-sheet__handle {
+  align-self: center;
+  width: 36px;
+  height: 4px;
+  border-radius: 2px;
+  background: var(--color-line-strong);
+}
+
+.profile-sheet__title {
+  margin: 0;
+  font-size: 20px;
+  font-weight: var(--font-bold);
+}
+
+.profile-sheet__help {
+  margin: -8px 0 0;
+  color: var(--color-text-sub);
+  font-size: var(--text-help);
+}
+
+.profile-field {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.profile-field__label {
+  color: var(--color-text-sub);
+  font-size: var(--text-label);
+  font-weight: var(--font-medium);
+}
+
+.profile-field__box {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  height: 44px;
+  padding: 0 14px;
+  border-radius: 10px;
+  background: var(--color-bg-sub);
+}
+
+.profile-field__box:focus-within {
+  box-shadow: inset 0 0 0 1.5px var(--color-primary);
+  background: var(--color-bg);
+}
+
+.profile-field__input,
+.profile-field__select {
+  flex: 1;
+  min-width: 0;
+  height: 100%;
+  border: 0;
+  background: transparent;
+  color: var(--color-text);
+  font-family: inherit;
+  font-size: var(--text-item);
+  font-weight: var(--font-bold);
+  outline: none;
+}
+
+.profile-field__input--one {
+  flex: 0 0 18px;
+  width: 18px;
+  text-align: center;
+}
+
+/* 추가할 때 앞 재무정보의 값: 보일 듯 말 듯한 회색. 비어 있는 채로 Tab을 누르면 그 값이 들어간다 */
+.profile-field__input--hint::placeholder {
+  color: #d4d4d8;
+  font-weight: var(--font-medium);
+  opacity: 1;
+}
+
+.profile-field__unit {
+  color: var(--color-text-sub);
+  font-size: var(--text-body);
+}
+
+/* 칸 아래 오류 문장 (입력 화면과 같은 문장) */
+.profile-field__message {
+  margin: 0;
+  color: var(--color-error-text);
+  font-size: var(--text-help);
+}
+
+.profile-field__message:empty {
+  display: none;
+}
+
+.profile-field--error .profile-field__box {
+  box-shadow: inset 0 0 0 1.5px var(--color-error);
+}
+
+.profile-segment {
+  display: grid;
+  grid-auto-columns: minmax(0, 1fr);
+  grid-auto-flow: column;
+  gap: 2px;
+  padding: 3px;
+  border-radius: 10px;
+  background: var(--color-bg-sub);
+}
+
+.profile-segment__option {
+  height: 34px;
+  border: 0;
+  border-radius: 8px;
+  background: transparent;
+  color: var(--color-text-sub);
+  font-family: inherit;
+  font-size: var(--text-help);
+  font-weight: var(--font-medium);
+  cursor: pointer;
+}
+
+.profile-segment__option[aria-pressed='true'] {
+  background: var(--color-bg);
+  color: var(--color-primary);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.12);
+}
+
+.profile-sheet__error {
+  margin: 0;
+  color: var(--color-error-text);
+  font-size: var(--text-help);
+}
+
+.profile-sheet__error:empty {
+  display: none;
+}
+
+.profile-sheet__buttons {
+  display: flex;
+  gap: 8px;
+  margin-top: 4px;
+}
+
+.profile-sheet__buttons .button {
+  flex: 1;
+}
+
+.profile-sheet__buttons .button--primary {
+  flex: 2;
+}
+
+.profile-sheet__buttons .profile-sheet__delete {
+  background: var(--color-error);
+}
+
+/* 주민등록번호 앞 7자리. 이미 입력한 상태는 숫자 대신 가린 모양과 만 나이만 (NFR-25) */
+.profile-rrn-help {
+  margin: 0;
+}
+
+.profile-rrn-help--error {
+  color: var(--color-error-text);
+}
+
+.profile-rrn-filled {
+  gap: 10px;
+}
+
+.profile-rrn-filled__dots {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  color: var(--color-text-sub);
+  font-size: var(--text-body);
+  letter-spacing: 0.05em;
+  white-space: nowrap;
+}
+
+.profile-rrn-filled__age {
+  color: var(--color-text);
+  font-size: var(--text-label);
+  font-weight: var(--font-bold);
+  white-space: nowrap;
+}
+
+.profile-rrn-filled__again {
+  height: 32px;
+  padding: 0 10px;
+  border: 0;
+  border-radius: 8px;
+  background: var(--color-bg);
+  color: var(--color-primary);
+  font-family: inherit;
+  font-size: var(--text-help);
+  font-weight: var(--font-bold);
+  white-space: nowrap;
+  cursor: pointer;
+}
+
+/* ───────── 찜한 시나리오 (index.html#saved) ─────────
+   재무정보 화면(.start-layout, 한 화면) 바로 아래 한 화면 이상. 목록이 짧아도 한 화면을 채워 맨 위에 맞추면 이것만 보인다 */
+.saved-band {
+  max-width: var(--page-width);
+  height: 8px;
+  margin: 0 auto;
+  background: var(--color-bg-sub);
+}
+
+.saved-section {
+  min-height: calc(100vh / var(--page-zoom, 1));
+  min-height: calc(100dvh / var(--page-zoom, 1));
+  padding-top: calc(var(--top-space) + 4px); /* 재무정보 화면보다 조금 위에서 시작 */
+  padding-bottom: 48px;
+}
+
+.saved-section__title {
+  margin: 0;
+}
+
+.saved-section__sub {
+  margin: 6px 0 16px;
+  color: var(--color-text-sub);
+  font-size: var(--text-body);
+}
+
+.saved-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin: 0 0 16px;
+}
+
+.saved-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  height: 38px;
+  padding: 0 14px;
+  border: 0;
+  border-radius: 8px;
+  background: #e9e9e9;
+  color: var(--color-text-sub);
+  font-family: inherit;
+  font-size: var(--text-label);
+  font-weight: var(--font-bold);
+  cursor: pointer;
+}
+
+.saved-chip[aria-pressed='true'] {
+  background: #043870;
+  color: var(--color-on-primary);
+}
+
+.saved-chip__count {
+  font-weight: var(--font-medium);
+}
+
+.saved-empty {
+  margin: 24px 0 0;
+  color: var(--color-text-sub);
+  font-size: var(--text-body);
+  text-align: center;
+}
+
+.saved-section .saved__list {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.saved-section__item {
+  position: relative;
+}
+
+.saved-section .saved__card {
+  display: block;
+  padding: 18px 18px 10px;
+  border-radius: var(--radius-card);
+  background: var(--color-bg-sub);
+  color: var(--color-text);
+  text-decoration: none;
+}
+
+.saved-section .saved__card:focus-visible {
+  outline: 2px solid var(--color-primary);
+  outline-offset: 2px;
+}
+
+/* 위 줄: 꼬리표 … 구분 배지(오른쪽 고정)와 그 옆 ♥ */
+.saved-tags {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px;
+  min-height: 24px;
+  margin-bottom: 10px;
+  padding-right: 26px;
+}
+
+/* 꼬리표(재무정보 이름 · 지금 조건과 다름 · 삭제된 재무정보): 바탕 없이 #333 글자. 사이에 세로 줄 */
+.saved-tag {
+  display: inline-flex;
+  align-items: center;
+  height: 26px;
+  padding: 0 4px 0 0;
+  color: #333333;
+  font-size: var(--text-help);
+  font-weight: var(--font-bold);
+}
+
+.saved-tag + .saved-tag::before {
+  content: '';
+  display: inline-block;
+  width: 1px;
+  height: 12px;
+  margin: 0 10px 0 0;
+  background: #aeaeb2;
+}
+
+/* 구분 배지: 지도 아파트 창의 배지(new-style.css의 .apt__title .badge)와 같은 모양. 회색 바탕, 검은 글자, 색 집 아이콘 */
+.saved-badge {
+  gap: 5px;
+  margin-left: auto;
+  border: none;
+  background: rgb(228, 228, 228);
+  color: #0f0f0f;
+}
+
+.saved-badge::before {
+  content: '';
+  width: 10px;
+  height: 10px;
+  -webkit-mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 12 12'%3E%3Cpath d='M1.5 5.3 6 1.5l4.5 3.8v5.2h-9z' fill='none' stroke='black' stroke-width='2' stroke-linejoin='round'/%3E%3C/svg%3E") center / contain no-repeat;
+  mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 12 12'%3E%3Cpath d='M1.5 5.3 6 1.5l4.5 3.8v5.2h-9z' fill='none' stroke='black' stroke-width='2' stroke-linejoin='round'/%3E%3C/svg%3E") center / contain no-repeat;
+}
+
+.saved-badge.badge--now::before {
+  background: var(--color-now);
+}
+
+.saved-badge.badge--within::before {
+  background: var(--color-within);
+}
+
+.saved-badge.badge--lack::before {
+  background: var(--color-lack);
+}
+
+.saved-section .saved__card-name {
+  display: block;
+  font-size: 19px;
+  font-weight: var(--font-bold);
+  line-height: 1.35;
+}
+
+.saved-section .saved__card-result {
+  margin: 8px 0 6px;
+  font-size: var(--text-button);
+  font-weight: var(--font-medium);
+}
+
+.saved-section .saved__card-result span {
+  font-weight: var(--font-bold);
+}
+
+/* 아래: 조건 한 줄, 그 아래 오른쪽 끝에 찜한 날짜 */
+.saved-section .saved__card-conditions {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  margin: 0;
+  padding-top: 10px;
+  border-top: 1px solid var(--color-line);
+  font-size: var(--text-label);
+  line-height: 1.5;
+}
+
+.saved-cond {
+  color: #48484a;
+}
+
+.saved-date {
+  align-self: flex-end;
+  padding-right: 1px;
+  color: #9a9aa0;
+  font-size: var(--text-badge);
+  line-height: 16px;
+}
+
+/* ♥ (누르면 찜 해제, ♡를 다시 누르면 다시 찜). 카드 링크 밖, 구분 배지 바로 옆 */
+.saved-heart {
+  position: absolute;
+  top: 16px;
+  right: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  padding: 0;
+  border: 0;
+  border-radius: 14px;
+  background: transparent;
+  color: var(--color-error);
+  cursor: pointer;
+}
+
+.saved-heart svg {
+  width: 20px;
+  height: 20px;
+}
+
+.saved-heart[aria-pressed='false'] {
+  color: var(--color-text-sub);
+}
+
+.saved-heart:focus-visible {
+  outline: 2px solid var(--color-primary);
+}
+
+/* 휴대폰: 면적 · 여유 금액, 조건 줄을 1 ~ 2px 줄여 한 줄에 들어가게 */
+@media (max-width: 1199px) {
+  .saved-section .saved__card-result {
+    font-size: 15px;
+  }
+
+  .saved-cond {
+    overflow: hidden;
+    font-size: 13px;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+  }
+}
+
+/* 알림 (찜 해제 실패 등) */
+.start-toast {
+  position: fixed;
+  left: 50%;
+  bottom: 24px;
+  z-index: 60;
+  width: calc(100% - 32px);
+  max-width: calc(var(--page-width) - 32px);
+  margin: 0;
+  transform: translateX(-50%);
+}

@@ -1,0 +1,351 @@
+/* 시나리오 탭 (P-06 ⑧). 담당: 박채은
+   js/scenario.js가 #scenario-panel 안에 그린다.
+   값 줄은 아파트 정보 탭과 같은 모양이라 sheet.css의 .apt-info를 함께 쓴다.
+   색과 크기는 common.css의 이름만 쓴다. */
+
+/* ───────── 결과 상자 ───────── */
+.scenario__result {
+  margin: 8px 0 16px;
+  padding: 16px 20px;
+  border: 1px solid var(--color-line-strong);
+  border-radius: var(--radius-card);
+  transition: opacity 0.2s;
+}
+
+/* 다시 계산하는 동안 앞의 결과 상자를 흐리게 남긴다 (A2). 값 줄은 흐리게 하지 않는다 (목업 A2) */
+.scenario__result--busy {
+  opacity: 0.4;
+}
+
+.scenario__lead {
+  margin: 0;
+  color: var(--color-text-sub);
+  font-size: var(--text-label);
+}
+
+.scenario__gap {
+  margin: 4px 0;
+  font-size: var(--text-display);
+  font-weight: var(--font-bold);
+  line-height: 38px;
+}
+
+.scenario__formula {
+  margin: 0;
+  color: var(--color-text-sub);
+  font-size: var(--text-help);
+  line-height: 20px;
+  word-break: keep-all;
+}
+
+/* 부족할 때 상자 안 아래쪽의 필요 월 저축액 (P-06 ⑳) */
+.scenario__need {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-top: 12px;
+  padding-top: 12px;
+  border-top: 1px solid var(--color-line);
+}
+
+.scenario__need-label {
+  color: var(--color-text-sub);
+  font-size: var(--text-body);
+}
+
+.scenario__need-value {
+  color: var(--color-text);
+  font-size: var(--text-amount);
+  font-weight: var(--font-bold);
+}
+
+/* ───────── 값 줄 ───────── */
+/* 허용 상승률 줄 아래의 설명 한 줄 */
+.scenario__growth-help {
+  flex-basis: 100%;
+  margin: 4px 0 0;
+  color: var(--color-text-sub);
+  font-size: var(--text-help);
+  line-height: 19px;
+}
+
+.scenario__rows .apt-info__row:has(.scenario__growth-help) {
+  flex-wrap: wrap;
+}
+
+/* ───────── 안내 상자 ───────── */
+.scenario__goal-now {
+  margin-top: 12px;
+}
+
+/* 대상 주택 가격 상한 초과 (P-06 ⑲). 주황 이름이 common.css에 생기면 그것으로 바꾼다 */
+.scenario__cap {
+  margin-bottom: 16px;
+  border: 1px solid var(--color-warning, var(--color-lack));
+  background: var(--color-warning-soft, var(--color-lack-soft));
+  color: var(--color-warning-text, var(--color-lack-text));
+}
+
+.scenario__guide {
+  margin-top: 24px;
+}
+
+.scenario__guide-line {
+  margin: 0;
+}
+
+.scenario__guide-line + .scenario__guide-line {
+  margin-top: 6px;
+}
+
+/* ───────── 조건 바꿔 보기 ───────── */
+.scenario__change {
+  margin: 24px calc(var(--page-padding) * -1) 0;
+  padding: 28px 38px 8px;
+  border-top: 1px solid var(--color-line-strong);
+}
+
+.scenario__change-title {
+  margin: 0 0 16px;
+  font-size: var(--text-item);
+  font-weight: var(--font-bold);
+}
+
+.scenario__field {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.scenario__field-label {
+  flex-shrink: 0;
+  font-size: var(--text-body);
+  font-weight: var(--font-medium);
+}
+
+.scenario__input-row {
+  display: flex;
+  flex: 1;
+  align-items: center;
+  min-width: 0;
+  height: 44px;
+  padding: 0 14px;
+  border: 1px solid var(--color-line-strong);
+  border-radius: var(--radius-card);
+  background: var(--color-bg);
+}
+
+.scenario__input-row:focus-within {
+  border-color: var(--color-primary);
+}
+
+.scenario__field--error .scenario__input-row {
+  border-color: var(--color-error);
+}
+
+.scenario__input {
+  flex: 1;
+  width: 100%;
+  min-width: 0;
+  height: 100%;
+  padding: 0;
+  border: 0;
+  outline: 0;
+  background: transparent;
+  color: var(--color-text);
+  font-family: inherit;
+  font-size: var(--text-item);
+  font-weight: var(--font-bold);
+}
+
+.scenario__unit {
+  color: var(--color-text-sub);
+  font-size: var(--text-label);
+  white-space: nowrap;
+}
+
+.scenario__field-error {
+  margin: 6px 0 0;
+  color: var(--color-error-text);
+  font-size: var(--text-help);
+}
+
+/* 목표 기간: 네 칸이 붙은 선택지 */
+.scenario__years {
+  display: flex;
+  margin: 12px 0;
+  overflow: hidden;
+  border: 1px solid var(--color-line-strong);
+  border-radius: var(--radius-card);
+}
+
+.scenario__year {
+  flex: 1;
+  height: var(--touch-size);
+  border: 0;
+  background: var(--color-bg);
+  color: var(--color-text);
+  font-family: inherit;
+  font-size: var(--text-body);
+  cursor: pointer;
+}
+
+.scenario__year[aria-pressed='true'] {
+  background: var(--color-primary);
+  color: var(--color-on-primary);
+  font-weight: var(--font-bold);
+}
+
+.scenario__year:disabled {
+  cursor: not-allowed;
+}
+
+.scenario__submit {
+  gap: 8px;
+  height: 48px;
+}
+
+/* ───────── 받는 중 (회색 자리 표시), 받지 못함 ─────────
+   모양은 대출상품 화면의 자리 표시(P-03 ⑦, loan.css의 .loan-skeleton)와 같은 회색 바탕이다.
+   결과 상자와 값 줄의 자리를 실제와 같게 잡아, 결과가 와도 화면이 덜 움직이게 한다. */
+.scenario__skeleton {
+  padding-bottom: 8px;
+}
+
+.scenario__result--skeleton {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.scenario__bone {
+  display: block;
+  border-radius: var(--radius-badge);
+  background: var(--color-bg-sub);
+}
+
+/* 결과 상자 안: 첫 줄, 큰 금액, 식 */
+.scenario__bone--lead {
+  width: 55%;
+  height: 16px;
+}
+
+.scenario__bone--gap {
+  width: 75%;
+  height: 32px;
+}
+
+.scenario__bone--formula {
+  width: 90%;
+  height: 14px;
+}
+
+/* 값 줄: 왼쪽 이름, 오른쪽 값. 줄의 높이는 실제 줄(.apt-info__row)과 같다 */
+.scenario__bone--label {
+  width: 96px;
+  height: 22px;
+}
+
+.scenario__bone--value {
+  width: 72px;
+  height: 22px;
+}
+
+/* 화면에는 보이지 않고 읽어 주는 프로그램만 읽는 글 ("계산하는 중") */
+.scenario__sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+}
+
+.scenario__fail {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 4px;
+  margin-top: 8px;
+  font-weight: var(--font-bold);
+}
+
+.scenario__spinner {
+  display: inline-block;
+  flex-shrink: 0;
+  width: 18px;
+  height: 18px;
+  border: 2px solid currentColor;
+  border-right-color: transparent;
+  border-radius: 50%;
+  animation: scenario-spin 0.8s linear infinite;
+}
+
+@keyframes scenario-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .scenario__spinner {
+    animation: none;
+  }
+}
+
+/* 화면 아래 검은 알림 (A4) */
+.scenario__toast {
+  position: fixed;
+  right: var(--page-padding);
+  bottom: 16px;
+  left: var(--page-padding);
+  z-index: 100;
+  max-width: calc(var(--page-width) - var(--page-padding) * 2);
+  margin: 0 auto;
+}
+
+/* ───────── 결과 저장 (3차, C2) ───────── */
+.scenario__save {
+  height: 48px;
+  margin-top: 24px;
+  border: 1px solid var(--color-line-strong);
+  background: var(--color-bg);
+}
+
+.scenario__save:disabled {
+  border-color: var(--color-line);
+  background: var(--color-bg);
+  color: var(--color-text);
+  cursor: default;
+}
+
+/* 알림 오른쪽의 "저장한 결과 보기" */
+.scenario__toast {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.scenario__toast-link {
+  flex-shrink: 0;
+  color: var(--color-primary);
+  font-weight: var(--font-bold);
+  text-decoration: underline;
+}
+
+/* 찜 (2026-10-21). [♥ 찜함]은 꺼 두지 않고, 누르면 찜 해제 */
+.scenario__save--on {
+  color: var(--color-error);
+}
+
+/* 아파트 창 머리의 하트 (공유 아이콘 앞). ♥는 빨간색 */
+.scenario-heart,
+.share-action.scenario-heart {
+  color: var(--color-text);
+}
+
+.scenario-heart[aria-pressed='true'],
+.share-action.scenario-heart[aria-pressed='true'] {
+  color: var(--color-error);
+}

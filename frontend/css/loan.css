@@ -1,0 +1,498 @@
+/* P-03 대출상품 화면에만 쓰는 모양. 담당: 박채은
+   입력란, 버튼, 진행 바, 한 번에 하나씩 묻는 틀(.form-page), 안내 상자(.notice)는 common.css에 있다.
+   색과 크기는 common.css :root의 이름으로만 쓴다. */
+
+/* ───────── 선택지 카드 ───────── */
+.loan-options {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding-bottom: 22px;
+}
+
+#product-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+#product-list:empty {
+  display: none;
+}
+
+/* 카드 전체가 누르는 영역이다. 동그란 단추는 숨기고 카드의 동그라미로 보여 준다. 키보드로는 그대로 고를 수 있다. */
+.loan-card {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  padding: 16px;
+  border: 1px solid var(--color-line-strong);
+  border-radius: var(--radius-card);
+  background: var(--color-bg);
+  cursor: pointer;
+}
+
+.loan-card input {
+  position: absolute;
+  opacity: 0;
+  pointer-events: none;
+}
+
+.loan-card:has(input:focus-visible) {
+  outline: 2px solid var(--color-primary);
+  outline-offset: 2px;
+}
+
+.loan-card--picked {
+  border: 2px solid var(--color-primary);
+  padding: 15px; /* 테두리가 굵어진 만큼 줄여 글자가 움직이지 않게 한다 */
+}
+
+.loan-card__head {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-height: 24px;
+}
+
+.loan-card__dot {
+  flex: none;
+  width: 22px;
+  height: 22px;
+  border: 2px solid var(--color-line-strong);
+  border-radius: 50%;
+  background: var(--color-bg);
+}
+
+.loan-card--picked .loan-card__dot {
+  border: 7px solid var(--color-primary);
+}
+
+.loan-card__name {
+  font-size: var(--text-item);
+  font-weight: var(--font-bold);
+}
+
+/* 펼친 내용. 접고 펼 때 높이가 부드럽게 바뀌어, 아래 카드가 그만큼 천천히 내려가고 올라온다.
+   높이를 auto로는 움직일 수 없어서, 격자의 줄 높이를 1fr과 0fr 사이에서 바꾼다. */
+.loan-card__detail {
+  display: grid;
+  grid-template-rows: 1fr;
+  padding-left: 32px;
+  transition: grid-template-rows 0.32s cubic-bezier(0.22, 1, 0.36, 1), opacity 0.2s ease;
+}
+
+.loan-card__detail-inner {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-height: 0;
+  overflow: hidden;
+  padding-top: 4px;
+}
+
+.loan-card__institution,
+.loan-card__sub,
+.loan-card__desc,
+.loan-card__line {
+  color: var(--color-text-sub);
+  font-size: var(--text-help);
+  line-height: 20px;
+}
+
+.loan-card__desc,
+.loan-card__line {
+  padding-left: 32px;
+}
+
+.loan-card__desc {
+  margin-top: 4px;
+}
+
+.loan-card__limit {
+  margin-top: 4px;
+  font-size: var(--text-amount);
+  font-weight: var(--font-bold);
+  line-height: 30px;
+}
+
+.loan-card__terms {
+  font-size: var(--text-body);
+  line-height: 22px;
+}
+
+.loan-card__foot {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  margin-top: 8px;
+  padding-top: 4px;
+  border-top: 1px solid var(--color-line);
+}
+
+.loan-card__eligibility {
+  color: var(--color-text-sub);
+  font-size: var(--text-help);
+  line-height: 19px;
+}
+
+/* "자세히". 누르는 영역은 44픽셀 이상 */
+.loan-card__more {
+  flex: none;
+  min-width: var(--touch-size);
+  min-height: var(--touch-size);
+  padding: 0 4px;
+  border: 0;
+  background: transparent;
+  color: var(--color-primary);
+  font-family: inherit;
+  font-size: var(--text-label);
+  font-weight: var(--font-bold);
+  text-decoration: underline;
+  cursor: pointer;
+}
+
+/* 접은 카드: 이름과 한 줄만 보인다. 펼친 카드에서는 한 줄을 숨긴다.
+   display를 바꾸지 않고 높이와 투명도를 움직여 부드럽게 접고 편다. */
+.loan-card__line {
+  max-height: 0;
+  overflow: hidden;
+  opacity: 0;
+  transition: max-height 0.32s cubic-bezier(0.22, 1, 0.36, 1), opacity 0.2s ease;
+}
+
+.loan-card--folded .loan-card__detail {
+  grid-template-rows: 0fr;
+  opacity: 0;
+  visibility: hidden; /* 접힌 카드의 "자세히"에 초점이 가지 않게 한다. 다 접힌 뒤에 숨긴다 */
+  transition: grid-template-rows 0.32s cubic-bezier(0.22, 1, 0.36, 1), opacity 0.2s ease, visibility 0s 0.32s;
+}
+
+.loan-card--folded .loan-card__line {
+  max-height: 64px; /* 좁은 화면에서 세 줄까지 */
+  padding-top: 4px;
+  opacity: 1;
+}
+
+/* 움직임을 줄이도록 설정한 사용자에게는 바로 바뀐다. */
+@media (prefers-reduced-motion: reduce) {
+  .loan-card__detail,
+  .loan-card--folded .loan-card__detail,
+  .loan-card__line {
+    transition: none;
+  }
+}
+
+/* ───────── 상품을 불러오는 동안 (P-03 ⑦) ───────── */
+.loan-skeleton {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.loan-skeleton__card {
+  height: 172px;
+  border-radius: var(--radius-card);
+  background: var(--color-bg-sub);
+}
+
+/* ───────── 불러오지 못함, 계산하지 못함 (P-03 ⑧, ⑨) ───────── */
+.loan-load-error,
+.loan-calc-error {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.loan-calc-error {
+  margin-bottom: 12px;
+}
+
+.loan-load-error .link-button,
+.loan-calc-error .link-button {
+  flex: none;
+  color: var(--color-error-text);
+  font-size: var(--text-help);
+}
+
+/* ───────── 상환 기간 ───────── */
+.years {
+  min-width: 0;
+  margin: 0;
+  padding: 0 0 22px;
+  border: 0;
+}
+
+.years .field__label {
+  padding: 0 0 10px;
+}
+
+/* 상환 기간: 회색 띠 안에서 고른 칸만 흰색으로 떠오른다 (2026-10-13에 정한 모양. 시안 3번) */
+.years__options {
+  display: flex;
+  padding: 3px;
+  border-radius: var(--radius-card);
+  background: var(--color-bg-sub);
+}
+
+.years__option {
+  position: relative;
+  flex: 1;
+  cursor: pointer;
+}
+
+.years__option input {
+  position: absolute;
+  opacity: 0;
+  pointer-events: none;
+}
+
+.years__option span {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: var(--touch-size);
+  border-radius: 9px; /* 바깥 모서리(12px)에서 안쪽 여백(3px)을 뺀 값 */
+  color: var(--color-text-sub);
+  font-size: var(--text-item);
+  font-weight: var(--font-medium);
+}
+
+.years__option input:checked + span {
+  background: var(--color-bg);
+  box-shadow: 0 0 0 1px var(--color-line);
+  color: var(--color-primary);
+  font-weight: var(--font-bold);
+}
+
+.years__option input:focus-visible + span {
+  outline: 2px solid var(--color-primary);
+  outline-offset: -2px;
+}
+
+/* ───────── 결과 (버튼 위의 고정 영역) ───────── */
+.loan-result {
+  margin-bottom: 12px;
+  padding: 14px 16px;
+  border-radius: var(--radius-card);
+  background: var(--color-bg-sub);
+}
+
+.loan-result__rows {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.loan-result__row {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 8px;
+  color: var(--color-text-sub);
+  font-size: var(--text-label);
+  line-height: 24px;
+}
+
+.loan-result__row strong {
+  color: var(--color-primary);
+  font-size: var(--text-amount);
+  font-weight: var(--font-bold);
+  white-space: nowrap;
+}
+
+/* 상환 기간을 고르기 전의 "상환 기간을 고르면 표시됩니다" */
+.loan-result__row strong.loan-result__wait {
+  color: var(--color-text-hint);
+  font-size: var(--text-help);
+  font-weight: var(--font-medium);
+  white-space: normal;
+  text-align: right;
+}
+
+.loan-result__title {
+  margin: 0;
+  font-size: var(--text-item);
+  font-weight: var(--font-bold);
+}
+
+.loan-result__note {
+  margin: 6px 0 0;
+  color: var(--color-text-sub);
+  font-size: var(--text-help);
+  line-height: 19px;
+}
+
+/* 버튼이 꺼져 있는 이유. 버튼 바로 위에 둔다. */
+.bottom-action__hint {
+  margin: 0 0 10px;
+  color: var(--color-text-sub);
+  font-size: var(--text-help);
+  text-align: center;
+}
+
+/* ───────── 조건 자세히: 아래에서 올라오는 창 (P-03 ⑥) ───────── */
+.sheet-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 10;
+  background: var(--color-dim);
+  opacity: 0.4;
+}
+
+.sheet {
+  position: fixed;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  z-index: 11;
+  max-width: var(--page-width);
+  max-height: 85vh;
+  margin: 0 auto;
+  padding: 8px var(--page-padding) 24px;
+  overflow-y: auto;
+  border-radius: 16px 16px 0 0;
+  background: var(--color-bg);
+  animation: sheet-up 0.3s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+@keyframes sheet-up {
+  from {
+    transform: translateY(100%);
+  }
+  to {
+    transform: translateY(0);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .sheet {
+    animation: none;
+  }
+}
+
+/* 웹(가로 1200px 이상): 아래에서 올라오지 않고 화면 가운데에 모달로 한 번에 뜬다 (2026-10-19 팀장 결정).
+   위아래 둥근 모서리, 손잡이는 숨긴다. 어두운 바탕(.sheet-backdrop)은 그대로 */
+@media (min-width: 1200px) {
+  .sheet {
+    top: 50%;
+    right: auto;
+    bottom: auto;
+    left: 50%;
+    width: min(var(--page-width), calc(100vw - 64px));
+    /* 상품마다 내용 길이가 달라도 같은 높이 (긴 쪽 보금자리론 약 770px). 화면이 더 낮으면 화면 - 48px에서 안에서 스크롤 */
+    display: flex;
+    flex-direction: column;
+    height: min(770px, calc(100vh / var(--page-zoom, 1) - 48px));
+    max-height: none;
+    margin: 0;
+    padding: 20px var(--page-padding) 24px;
+    border-radius: 16px;
+    box-shadow: 0 18px 48px rgba(0, 0, 0, 0.18);
+    transform: translate(-50%, -50%);
+    animation: none;
+    scrollbar-width: none; /* 스크롤바를 숨겨 오른쪽 둥근 모서리가 가려지지 않게 */
+  }
+
+  .sheet::-webkit-scrollbar {
+    display: none;
+  }
+
+  .sheet__handle {
+    display: none;
+  }
+
+  /* 짧은 상품은 맨 아래 안내 줄을 모달 바닥에 붙인다 (아래의 기본 .sheet__foot보다 앞서게 .sheet 안으로 좁힌다) */
+  .sheet .sheet__foot {
+    margin-top: auto;
+  }
+}
+
+.sheet__handle {
+  width: 36px;
+  height: 5px;
+  margin: 0 auto 8px;
+  border-radius: var(--radius-pill);
+  background: var(--color-line-strong);
+}
+
+.sheet__head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.sheet__title {
+  margin: 0;
+  font-size: var(--text-button);
+  font-weight: var(--font-bold);
+}
+
+.sheet__close {
+  flex: none;
+  width: var(--touch-size);
+  height: var(--touch-size);
+  border: 0;
+  background: transparent;
+  color: var(--color-text);
+  font-family: inherit;
+  font-size: 26px;
+  cursor: pointer;
+}
+
+.sheet__rows {
+  margin: 8px 0 0;
+}
+
+.sheet__row {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 10px 0;
+  border-bottom: 1px solid var(--color-line);
+  font-size: var(--text-label);
+}
+
+.sheet__row dt {
+  color: var(--color-text-sub);
+}
+
+.sheet__row dd {
+  margin: 0;
+  font-weight: var(--font-bold);
+  text-align: right;
+}
+
+.sheet__subtitle {
+  margin: 18px 0 6px;
+  font-size: var(--text-body);
+  font-weight: var(--font-bold);
+}
+
+.sheet__list {
+  margin: 0 0 14px;
+  padding-left: 18px;
+  font-size: var(--text-label);
+  line-height: 22px;
+}
+
+.sheet__foot {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  margin-top: 14px;
+  color: var(--color-text-sub);
+  font-size: var(--text-help);
+}
+
+.sheet__link {
+  display: inline-flex;
+  align-items: center;
+  min-height: var(--touch-size);
+  color: var(--color-text);
+  font-weight: var(--font-medium);
+}

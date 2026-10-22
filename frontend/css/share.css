@@ -1,0 +1,366 @@
+/* 아파트 공유와 주소 복사 (share.js). 색과 크기는 common.css의 이름을 쓴다 */
+
+/* ───────── 아이콘 버튼 (아파트 머리의 공유, 주소 옆의 복사) ───────── */
+.share-action {
+  display: inline-flex;
+  flex: none;
+  align-items: center;
+  justify-content: center;
+  width: var(--touch-size);
+  height: var(--touch-size);
+  padding: 0;
+  border: 0;
+  background: transparent; /* 누를 때도 바탕을 칠하지 않는다. 옆 글자를 가리지 않게 아이콘 색만 바꾼다 */
+  color: var(--color-text-hint);
+  cursor: pointer;
+  transition: color 0.2s ease, transform 0.15s ease;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.share-action--share {
+  color: var(--color-text-sub);
+}
+
+.share-action:hover,
+.share-action:focus-visible {
+  color: var(--color-text);
+}
+
+.share-action:active {
+  color: var(--color-text);
+  transform: scale(0.9);
+}
+
+.share-action:focus-visible {
+  outline: none;
+}
+
+.share-action .share-icon {
+  width: 22px;
+  height: 22px;
+}
+
+/* 주소 옆의 복사는 글자 크기에 맞춰 작게 보이되, 누르는 영역은 44px을 지킨다 (위아래만 겹치게 해서 줄 높이는 그대로) */
+.share-action--copy {
+  width: 36px;
+  margin: -12px -8px -12px 0;
+  vertical-align: middle;
+}
+
+.share-action--copy .share-icon {
+  width: 17px;
+  height: 17px;
+}
+
+.share-icon {
+  width: 22px;
+  height: 22px;
+}
+
+/* 주소 옆의 복사는 글자 크기에 맞춰 작게 보이되, 누르는 영역은 44px을 지킨다 */
+.share-action--copy {
+  margin: -12px -10px -12px 0;
+  vertical-align: middle;
+}
+
+.share-action--copy .share-icon {
+  width: 18px;
+  height: 18px;
+}
+
+.share-icon {
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.8;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+/* ───────── 공유 창 ───────── */
+.share {
+  width: min(calc(100vw - 2 * var(--page-padding)), 360px);
+  max-height: calc(100vh / var(--page-zoom, 1) - 48px);
+  padding: 24px 22px 22px;
+  border: 0;
+  border-radius: 24px;
+  background: var(--color-bg);
+  color: var(--color-text);
+  box-shadow: 0 18px 48px rgba(0, 0, 0, 0.18);
+  overflow: hidden auto;
+  opacity: 0;
+  transform: translateY(16px) scale(0.96);
+  transition: opacity 0.22s ease, transform 0.26s cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+
+.share::backdrop {
+  background: rgba(0, 0, 0, 0);
+  transition: background-color 0.22s ease;
+}
+
+.share--open {
+  opacity: 1;
+  transform: none;
+}
+
+.share--open::backdrop {
+  background: rgba(0, 0, 0, 0.42);
+}
+
+.share--closing {
+  opacity: 0;
+  transform: translateY(10px) scale(0.98);
+}
+
+.share__head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 4px;
+}
+
+.share__title {
+  margin: 0;
+  font-size: var(--text-title);
+  font-weight: var(--font-bold);
+  line-height: 34px;
+}
+
+.share__close {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: var(--touch-size);
+  height: var(--touch-size);
+  margin-right: -10px;
+  padding: 0;
+  border: 0;
+  border-radius: var(--radius-pill);
+  background: transparent;
+  color: var(--color-text-sub);
+  cursor: pointer;
+}
+
+.share__close:hover {
+  background: var(--color-bg-sub);
+}
+
+.share__close .share-icon {
+  width: 24px;
+  height: 24px;
+}
+
+/* 두 화면을 한 칸에 겹쳐 두고, 옆으로 밀면서 바꾼다 */
+.share__stage {
+  display: grid;
+}
+
+.share__panel {
+  grid-area: 1 / 1;
+  min-width: 0;
+  transition: opacity 0.28s ease, transform 0.32s cubic-bezier(0.2, 0.8, 0.2, 1), visibility 0s linear 0s;
+}
+
+.share[data-panel='link'] .share__panel--qr,
+.share[data-panel='qr'] .share__panel--link {
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+  transition: opacity 0.2s ease, transform 0.32s cubic-bezier(0.2, 0.8, 0.2, 1), visibility 0s linear 0.32s;
+}
+
+.share[data-panel='link'] .share__panel--qr {
+  transform: translateX(32px);
+}
+
+.share[data-panel='qr'] .share__panel--link {
+  transform: translateX(-32px);
+}
+
+.share__lead {
+  margin: 0 0 18px;
+  color: var(--color-text-sub);
+  font-size: var(--text-body);
+  line-height: 22px;
+}
+
+.share__card {
+  display: flex;
+  gap: 14px;
+  align-items: center;
+  margin-bottom: 22px;
+  padding: 16px;
+  border-radius: 16px;
+  background: var(--color-bg-sub);
+}
+
+.share__badge {
+  display: inline-flex;
+  flex: none;
+  align-items: center;
+  justify-content: center;
+  width: 52px;
+  height: 52px;
+  border-radius: var(--radius-pill);
+  background: var(--color-primary-soft);
+  color: var(--color-primary);
+}
+
+.share__badge .share-icon {
+  width: 26px;
+  height: 26px;
+  stroke-width: 2;
+}
+
+.share__card-text,
+.share__qr-head {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+
+.share__name {
+  overflow: hidden;
+  font-size: var(--text-item);
+  font-weight: var(--font-bold);
+  line-height: 24px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.share__area {
+  color: var(--color-text-sub);
+  font-size: var(--text-label);
+  line-height: 20px;
+}
+
+.share__label {
+  display: block;
+  margin-bottom: 8px;
+  font-size: var(--text-label);
+  font-weight: var(--font-bold);
+}
+
+/* 공유 링크 칸. 보여 주기만 하고 글자는 선택되지 않는다 (user-select: none). 복사는 [링크 복사]로 한다.
+   복사가 안 되는 브라우저에서만 share__link--selectable을 붙여 직접 선택할 수 있게 푼다 */
+.share__link {
+  box-sizing: border-box;
+  display: flex;
+  align-items: center;
+  width: 100%;
+  height: var(--input-height);
+  margin-bottom: 14px;
+  padding: 0 14px;
+  overflow: hidden;
+  border: 1px solid var(--color-line-strong);
+  border-radius: var(--radius-card);
+  background: var(--color-bg);
+  color: var(--color-text-sub);
+  font-size: var(--text-label);
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  -webkit-user-select: none;
+  user-select: none;
+  cursor: default;
+}
+
+.share__link--selectable {
+  -webkit-user-select: all;
+  user-select: all;
+  border-color: var(--color-primary);
+}
+
+.share__fail {
+  margin: -6px 0 12px;
+  color: var(--color-error-text);
+  font-size: var(--text-help);
+  line-height: 19px;
+}
+
+.share__button {
+  gap: 8px;
+  height: 52px;
+  transition: background-color 0.2s ease, color 0.2s ease, transform 0.12s ease;
+}
+
+.share__button:active {
+  transform: scale(0.98);
+}
+
+.share__button + .share__button {
+  margin-top: 10px;
+}
+
+.share__button .share-icon--button {
+  width: 22px;
+  height: 22px;
+  stroke-width: 2;
+}
+
+/* 복사하고 잠깐 초록으로 바뀐다 */
+.share__button--done {
+  background: var(--color-within-text);
+}
+
+.share__button--line {
+  border: 1px solid var(--color-line-strong);
+  background: var(--color-bg);
+  color: var(--color-now-text);
+}
+
+.share__button--line:hover {
+  background: var(--color-primary-soft);
+}
+
+.share__qr-head {
+  align-items: center;
+  margin-bottom: 14px;
+  text-align: center;
+}
+
+.share__qr {
+  display: flex;
+  justify-content: center;
+  margin-bottom: 20px;
+  color: var(--color-text);
+}
+
+.share__qr-svg {
+  width: min(220px, 70vw);
+  height: auto;
+  border-radius: var(--radius-card);
+  box-shadow: 0 0 0 1px var(--color-line);
+}
+
+/* ───────── 짧은 안내 ("복사했습니다.") ───────── */
+.share-toast {
+  position: fixed;
+  left: 50%;
+  bottom: 32px;
+  z-index: 1000;
+  max-width: calc(100vw - 2 * var(--page-padding));
+  padding: 12px 18px;
+  border-radius: var(--radius-pill);
+  background: var(--color-text);
+  color: var(--color-bg);
+  font-size: var(--text-help);
+  line-height: 20px;
+  opacity: 0;
+  pointer-events: none;
+  transform: translate(-50%, 12px);
+  transition: opacity 0.2s ease, transform 0.25s cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+
+.share-toast--on {
+  opacity: 1;
+  transform: translate(-50%, 0);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .share,
+  .share::backdrop,
+  .share__panel,
+  .share-toast {
+    transition: none;
+  }
+}

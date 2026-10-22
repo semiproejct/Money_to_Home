@@ -1,0 +1,54 @@
+/* P-04 ⑤ 입력 요약. 담당: 김해원. 흰 바탕에 테두리 카드 세 개 (목업 P-04 ⑤) */
+
+.summary-card {
+  margin-bottom: 12px;
+  padding: 6px 16px;
+  border: 1px solid var(--color-line);
+  border-radius: var(--radius-card);
+}
+
+.summary-card__head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 0 6px;
+}
+
+.summary-card__title {
+  margin: 0;
+  font-size: var(--text-body);
+  font-weight: var(--font-bold);
+}
+
+.summary-card__edit {
+  color: var(--color-text-sub);
+  font-size: var(--text-label);
+  text-decoration: underline;
+}
+
+.summary-card__rows {
+  margin: 0;
+}
+
+.summary-card__row {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 11px 0;
+}
+
+.summary-card__row + .summary-card__row {
+  border-top: 1px solid var(--color-line);
+}
+
+.summary-card__row dt {
+  color: var(--color-text-sub);
+  font-size: var(--text-label);
+}
+
+.summary-card__row dd {
+  margin: 0;
+  font-size: var(--text-label);
+  font-weight: var(--font-bold);
+  text-align: right;
+}

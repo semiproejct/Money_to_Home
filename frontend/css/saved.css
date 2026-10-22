@@ -1,0 +1,224 @@
+/* 저장한 결과 (P-09, 3차). 담당: 박채은
+   목록(C1)과 열어 보기(C3). 결과 상자와 값 줄은 scenario.css와 sheet.css의 모양을 그대로 쓴다.
+   색과 크기는 common.css의 이름만 쓴다. */
+
+.saved__nav {
+  display: flex;
+  align-items: center;
+  height: var(--progress-height);
+  padding: 0 8px;
+}
+
+.saved {
+  padding-bottom: 32px;
+}
+
+.saved .subtitle {
+  margin-bottom: 24px;
+}
+
+/* ───────── 목록 (C1) ───────── */
+.saved__list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.saved__card {
+  display: block;
+  padding: 16px;
+  border: 1px solid var(--color-line-strong);
+  border-radius: var(--radius-card);
+  color: var(--color-text);
+  text-decoration: none;
+}
+
+.saved__card:focus-visible {
+  outline: 2px solid var(--color-primary);
+  outline-offset: 2px;
+}
+
+.saved__card-top {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.saved__card-name {
+  font-size: var(--text-item);
+  font-weight: var(--font-bold);
+}
+
+.saved__card-date {
+  flex-shrink: 0;
+  color: var(--color-text-sub);
+  font-size: var(--text-help);
+}
+
+.saved__card-result {
+  margin: 6px 0 2px;
+  font-size: var(--text-body);
+  font-weight: var(--font-medium);
+}
+
+.saved__card-result .amount--now,
+.saved__card-result .amount--within,
+.saved__card-result .amount--lack {
+  font-weight: var(--font-bold);
+}
+
+.saved__card-conditions {
+  margin: 0;
+  color: var(--color-text-sub);
+  font-size: var(--text-help);
+}
+
+.saved__empty {
+  margin: 24px 0 0;
+  color: var(--color-text-sub);
+  font-size: var(--text-help);
+  text-align: center;
+}
+
+/* ───────── 열어 보기 (C3) ───────── */
+.saved__title-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.saved__name {
+  margin: 0;
+}
+
+.saved__meta {
+  margin: 6px 0 16px;
+  color: var(--color-text-sub);
+  font-size: var(--text-body);
+}
+
+/* 점선 안내 상자 */
+.saved__note {
+  margin: 20px 0 0;
+  padding: 12px 14px;
+  border: 1px dashed var(--color-line-strong);
+  border-radius: var(--radius-card);
+  color: var(--color-text-sub);
+  font-size: var(--text-help);
+  line-height: 20px;
+}
+
+.saved__to-map {
+  margin-top: 40px;
+}
+
+/* ───────── 받는 중 (회색 자리 표시) ─────────
+   막대(.scenario__bone)는 scenario.css의 것을 함께 쓴다. 여기서는 길이만 정한다. */
+.saved__card--skeleton {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  border-color: var(--color-line);
+}
+
+.saved__bone--name {
+  width: 45%;
+  height: 22px;
+}
+
+.saved__bone--result {
+  width: 65%;
+  height: 20px;
+}
+
+.saved__bone--conditions {
+  width: 80%;
+  height: 16px;
+}
+
+.saved__bone--title {
+  width: 60%;
+  height: 30px;
+}
+
+.saved__bone--meta {
+  width: 70%;
+  height: 20px;
+  margin: 8px 0 16px;
+}
+
+.saved__fail {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 4px;
+  margin-top: 8px;
+  font-weight: var(--font-bold);
+}
+
+/* ───────── 2026-10-21 (재무정보 3개 + 찜) ───────── */
+/* 웹(가로 1200px 이상): ‹ 줄도 가운데 기둥 폭 안에 */
+@media (min-width: 1200px) {
+  body:has(> .header) .saved__nav {
+    max-width: var(--page-width);
+    margin: 0 auto;
+  }
+}
+
+/* 구분 배지: 지도 아파트 창의 배지(new-style.css의 .apt__title .badge)와 같은 모양. 회색 바탕, 검은 글자, 색 집 아이콘 */
+.saved__title-row .badge {
+  gap: 5px;
+  border: none;
+  background: rgb(228, 228, 228);
+  color: #0f0f0f;
+}
+
+.saved__title-row .badge::before {
+  content: '';
+  width: 10px;
+  height: 10px;
+  -webkit-mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 12 12'%3E%3Cpath d='M1.5 5.3 6 1.5l4.5 3.8v5.2h-9z' fill='none' stroke='black' stroke-width='2' stroke-linejoin='round'/%3E%3C/svg%3E") center / contain no-repeat;
+  mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 12 12'%3E%3Cpath d='M1.5 5.3 6 1.5l4.5 3.8v5.2h-9z' fill='none' stroke='black' stroke-width='2' stroke-linejoin='round'/%3E%3C/svg%3E") center / contain no-repeat;
+}
+
+.saved__title-row .badge--now::before {
+  background: var(--color-now);
+}
+
+.saved__title-row .badge--within::before {
+  background: var(--color-within);
+}
+
+.saved__title-row .badge--lack::before {
+  background: var(--color-lack);
+}
+
+/* 이름 줄 오른쪽 끝의 ♥ (누르면 찜 해제, ♡를 다시 누르면 다시 찜) */
+.saved__heart {
+  display: flex;
+  flex: none;
+  align-items: center;
+  justify-content: center;
+  width: var(--touch-size);
+  height: var(--touch-size);
+  margin: 0 -8px 0 auto;
+  padding: 0;
+  border: 0;
+  border-radius: 22px;
+  background: transparent;
+  color: var(--color-error);
+  cursor: pointer;
+}
+
+.saved__heart svg {
+  width: 30px;
+  height: 30px;
+}
+
+.saved__heart[aria-pressed='false'] {
+  color: var(--color-text-sub);
+}

@@ -1,0 +1,371 @@
+/* 조건 창 (P-05 ② 조건). 담당: 김목산
+   지도 화면의 틀(.map-app) 아래쪽에서 올라오는 창이다. 지역 선택 창(region.css)과 같은 모양으로 둔다.
+   색과 크기는 common.css :root의 이름으로만 쓴다.
+   기준: 확정 목업 v3의 "P-05 ② 조건" (docs/mockups/P05_02.png) */
+
+.filter-sheet {
+  position: absolute;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  z-index: 5; /* 지도 위의 버튼과 범례보다 위. 지역 선택 창과 같다 */
+  display: flex;
+  max-height: 90%;
+  border-radius: 20px 20px 0 0;
+  background: var(--color-bg);
+  box-shadow: 0 -4px 16px rgba(0, 0, 0, 0.12);
+  color: var(--color-text);
+  font-family: var(--font-family);
+  /* 아래에서 천천히 미끄러져 올라온다. 지도 위에 떠 있을 뿐 지도와 다른 요소의 자리는 바꾸지 않는다 */
+  animation: filter-sheet-up 0.5s cubic-bezier(0.32, 0.72, 0, 1) both;
+  will-change: transform;
+}
+
+/* 닫을 때는 아래로 내려간다 (filter.js의 FILTER_CLOSE_MS와 같은 시간) */
+.filter-sheet--closing {
+  animation: filter-sheet-down 0.3s cubic-bezier(0.4, 0, 1, 1) both;
+  pointer-events: none;
+}
+
+.filter-sheet[hidden] {
+  display: none;
+}
+
+@keyframes filter-sheet-up {
+  from {
+    transform: translateY(100%);
+  }
+  to {
+    transform: translateY(0);
+  }
+}
+
+@keyframes filter-sheet-down {
+  from {
+    transform: translateY(0);
+  }
+  to {
+    transform: translateY(100%);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .filter-sheet,
+  .filter-sheet--closing {
+    animation: none;
+  }
+}
+
+.filter-sheet__inner {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  min-height: 0;
+  padding: 8px var(--page-padding) 20px;
+}
+
+.filter-sheet__handle {
+  flex-shrink: 0;
+  align-self: center;
+  width: 40px;
+  height: 5px;
+  border-radius: var(--radius-pill);
+  background: var(--color-line-strong);
+}
+
+.filter-sheet__head {
+  display: flex;
+  flex-shrink: 0;
+  align-items: center;
+  justify-content: space-between;
+  padding: 14px 0 4px;
+}
+
+.filter-sheet__title {
+  margin: 0;
+  font-size: 20px; /* 지역 선택 창의 제목과 같다 */
+  font-weight: var(--font-bold);
+}
+
+.filter-sheet button {
+  font-family: inherit;
+}
+
+.filter-sheet__close {
+  width: var(--touch-size);
+  height: var(--touch-size);
+  margin-right: -10px;
+  border: 0;
+  background: transparent;
+  color: var(--color-text);
+  font-size: 28px;
+  font-weight: var(--font-regular);
+  line-height: 1;
+  cursor: pointer;
+}
+
+/* 화면이 낮으면 이 안에서만 위아래로 움직인다. 제목과 아래 버튼은 제자리에 있다 */
+.filter-sheet__body {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+}
+
+.filter-sheet__section {
+  padding-top: 2px;
+}
+
+.filter-sheet__label-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  min-height: 40px;
+  margin-bottom: 4px;
+}
+
+.filter-sheet__label {
+  margin: 0;
+  font-size: var(--text-body);
+  font-weight: var(--font-bold);
+}
+
+/* 자금 부족 표시 한 줄. 줄 전체가 스위치 버튼이다 (누르는 영역 44px 이상) */
+.filter-sheet__section--lack {
+  margin-top: 8px;
+  border-top: 1px solid var(--color-line);
+}
+
+.filter-sheet__lack {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  width: 100%;
+  min-height: 60px;
+  padding: 8px 0;
+  border: 0;
+  background: none;
+  color: var(--color-text);
+  font-family: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+
+.filter-sheet__lack:focus-visible {
+  outline: 2px solid var(--color-primary);
+  outline-offset: 2px;
+}
+
+.filter-sheet__lack-text {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.filter-sheet__lack-help {
+  color: var(--color-text-sub);
+  font-size: var(--text-help);
+}
+
+/* 스위치 44 × 26 */
+.filter-sheet__switch {
+  position: relative;
+  flex: none;
+  width: 44px;
+  height: 26px;
+  border-radius: var(--radius-pill);
+  background: var(--color-line-strong);
+  transition: background 0.15s ease;
+}
+
+.filter-sheet__switch-knob {
+  position: absolute;
+  top: 3px;
+  left: 3px;
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  background: var(--color-bg);
+  transition: transform 0.15s ease;
+}
+
+.filter-sheet__lack[aria-checked='true'] .filter-sheet__switch {
+  background: var(--color-primary);
+}
+
+.filter-sheet__lack[aria-checked='true'] .filter-sheet__switch-knob {
+  transform: translateX(18px);
+}
+
+/* ㎡ / 평. 회색 바탕에 고른 쪽만 흰 칸 */
+.filter-sheet__unit-toggle {
+  display: flex;
+  padding: 3px;
+  border-radius: 10px;
+  background: var(--color-bg-sub);
+}
+
+.filter-sheet__unit-option {
+  min-width: var(--touch-size);
+  height: 32px;
+  padding: 0 8px;
+  border: 0;
+  border-radius: 8px;
+  background: transparent;
+  color: var(--color-text-sub);
+  font-size: var(--text-label);
+  font-weight: var(--font-medium);
+  cursor: pointer;
+}
+
+.filter-sheet__unit-option[aria-pressed='true'] {
+  background: var(--color-bg);
+  color: var(--color-text);
+  font-weight: var(--font-bold);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.12);
+}
+
+/* 양쪽 손잡이 슬라이더. 겹친 range 두 개 가운데 손잡이만 누를 수 있다 */
+.filter-sheet__slider {
+  position: relative;
+  height: var(--touch-size);
+  margin: 0 4px;
+}
+
+.filter-sheet__track,
+.filter-sheet__fill {
+  position: absolute;
+  top: 50%;
+  height: 4px;
+  border-radius: var(--radius-pill);
+  transform: translateY(-50%);
+}
+
+.filter-sheet__track {
+  right: 0;
+  left: 0;
+  background: var(--color-line);
+}
+
+.filter-sheet__fill {
+  background: var(--color-primary);
+}
+
+.filter-sheet__thumb {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  margin: 0;
+  background: transparent;
+  pointer-events: none;
+  -webkit-appearance: none;
+  appearance: none;
+}
+
+.filter-sheet__thumb::-webkit-slider-thumb {
+  width: 24px;
+  height: 24px;
+  border: 2px solid var(--color-primary);
+  border-radius: 50%;
+  background: var(--color-bg);
+  cursor: pointer;
+  pointer-events: auto;
+  -webkit-appearance: none;
+  appearance: none;
+}
+
+.filter-sheet__thumb::-moz-range-thumb {
+  width: 20px;
+  height: 20px;
+  border: 2px solid var(--color-primary);
+  border-radius: 50%;
+  background: var(--color-bg);
+  cursor: pointer;
+  pointer-events: auto;
+}
+
+.filter-sheet__thumb::-moz-range-track {
+  background: transparent;
+}
+
+.filter-sheet__thumb:focus-visible::-webkit-slider-thumb {
+  outline: 2px solid var(--color-primary);
+  outline-offset: 2px;
+}
+
+/* 최소 ~ 최대 */
+.filter-sheet__range {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.filter-sheet__input {
+  flex: 1;
+  min-width: 0;
+  height: var(--input-height);
+  padding: 0 14px;
+  border: 1px solid var(--color-line-strong);
+  border-radius: var(--radius-card);
+  outline: 0;
+  background: var(--color-bg);
+  color: var(--color-text);
+  font-family: inherit;
+  font-size: var(--text-button);
+  font-weight: var(--font-bold);
+}
+
+.filter-sheet__input::placeholder {
+  color: var(--color-text-hint);
+  font-weight: var(--font-regular);
+}
+
+.filter-sheet__input:focus {
+  border-color: var(--color-primary);
+}
+
+.filter-sheet__tilde,
+.filter-sheet__unit {
+  flex-shrink: 0;
+  color: var(--color-text-sub);
+  font-size: var(--text-label);
+}
+
+/* 오류 문구. 자리를 늘 비워 두어 문구가 생겨도 아래가 밀리지 않는다 */
+.filter-sheet__error {
+  min-height: 19px;
+  margin: 2px 0 0;
+  color: var(--color-error-text);
+  font-size: var(--text-help);
+  line-height: 19px;
+}
+
+/* 평균가를 원으로 읽어 주는 글자. "1억 원 ~ 3억 원" */
+.filter-sheet__error--read {
+  color: var(--color-text-sub);
+}
+
+.filter-sheet__section--error .filter-sheet__input {
+  border-color: var(--color-error);
+}
+
+/* 초기화 | 적용 */
+.filter-sheet__foot {
+  display: flex;
+  flex-shrink: 0;
+  gap: 10px;
+  padding-top: 8px;
+}
+
+.filter-sheet__reset {
+  flex: 0 0 auto;
+  width: auto;
+  min-width: 86px;
+  border: 1px solid var(--color-line-strong);
+  background: var(--color-bg);
+}
+
+.filter-sheet__apply {
+  flex: 1;
+}

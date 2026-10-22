@@ -1,0 +1,12 @@
+# 경계 자료를 만드는 스크립트(data/build_boundaries.py)에서만 쓰는 라이브러리.
+# 서버를 켜는 데는 필요 없다. 그래서 requirements.txt와 따로 둔다.
+# 설치: 가상 환경을 켠 뒤  python -m pip install -r data/requirements-boundary.txt
+#
+# admdongkor : 행정동 경계 (github.com/vuski/admdongkor). 처음 실행할 때 GitHub에서 목록과 자료를 받아 캐시에 둔다
+# geopandas  : 합치기(union), 좌표계 바꾸기. shapely, pyproj가 함께 깔린다
+# pyshp      : 브이월드 SHP 읽기. 순수 파이썬이라 GDAL(DLL)이 필요 없다 (Windows에서 GDAL DLL을 못 찾는 PC가 있다)
+# pyarrow    : admdongkor 자료(parquet) 읽기
+admdongkor
+geopandas
+pyarrow
+pyshp

@@ -1,0 +1,44 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <!-- 늘 밝은 화면으로 (2026-10-20). 휴대폰 브라우저의 "웹 페이지 어둡게"가 우리 색을 뒤집지 않게 한다 -->
+  <meta name="color-scheme" content="only light">
+  <title>찜한 시나리오 · 머니 to 홈</title>
+  <link rel="stylesheet" href="css/common.css?v=20261021-2">
+  <!-- 값 줄(.apt-info)은 아파트 창과 같은 모양이라 sheet.css를 함께 쓴다 -->
+  <link rel="stylesheet" href="css/sheet.css?v=20261020-13">
+  <link rel="stylesheet" href="css/scenario.css?v=20261021-mp1">
+  <link rel="stylesheet" href="css/saved.css?v=20261021-mp1">
+  <link rel="stylesheet" href="css/glossary.css?v=20261015-2">
+</head>
+<body>
+  <!-- P-09 찜한 시나리오 하나 열어 보기 (3차). 담당: 박채은. 와이어프레임 C3.
+       saved.html?id=번호. js/saved.js가 그린다. 목록은 로그인한 시작 화면 아래로 옮겼다 (index.html#saved, 2026-10-21).
+       로그인해야 볼 수 있다. 로그인하지 않았으면 로그인 화면으로, 30분이 지나 풀렸으면 시작 화면으로 보낸다. -->
+  <!-- 웹(가로 1200px 이상)에서만 왼쪽 위에 보이는 로고. 시작 화면처럼 가운데 기둥 하나로 둔다 (2026-10-21) -->
+  <header class="header" id="header"></header>
+  <div class="top-space"></div>
+
+  <nav class="saved__nav">
+    <a class="progress__back" id="saved-back" href="index.html#saved" aria-label="찜한 시나리오 목록">‹</a>
+  </nav>
+
+  <main class="page saved" id="saved-main" aria-live="polite"></main>
+
+  <!-- 공통 JavaScript. 모든 화면이 이 순서로 먼저 불러 쓴다. 그 아래에 화면의 파일을 둔다. -->
+  <script src="js/api.js?v=20261015-2"></script>
+  <script src="js/store.js?v=20261015-2"></script>
+  <script src="js/format.js?v=20261019-2"></script>
+  <script src="js/guard.js?v=20261015-2"></script>
+  <script src="js/layout.js?v=20261015-2"></script>
+  <!-- 로그인이 30분이 지나 풀렸는지 알아보는 데 쓴다 (P-01 ⑤) -->
+  <script src="js/account.js?v=20261021-mp1"></script>
+  <!-- 결과 상자와 값 줄은 시나리오 탭과 같은 함수로 그린다 -->
+  <script src="js/glossary.js?v=20261015-2"></script>
+  <script src="js/scenario.js?v=20261021-mp1"></script>
+  <script src="js/saved.js?v=20261021-mp1"></script>
+  <script src="js/scrollbar.js?v=20261020-6"></script>
+</body>
+</html>

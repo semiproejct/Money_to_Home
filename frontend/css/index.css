@@ -1,0 +1,212 @@
+/* P-01 시작 화면에만 쓰는 모양. 공통 부품은 common.css에 있다. */
+
+.start {
+  padding-top: 32px;
+}
+
+.start__logo {
+  display: block;
+  width: 64px;
+  height: 64px;
+  margin-bottom: 24px;
+}
+
+/* 세 단계 설명 */
+.steps {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+  margin: 0;
+  padding: 28px 0;
+  list-style: none;
+}
+
+.steps__item {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
+.steps__number {
+  display: flex;
+  flex-shrink: 0;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  border-radius: 16px;
+  background: var(--color-primary-soft);
+  color: var(--color-primary);
+  font-size: var(--text-body);
+  font-weight: var(--font-bold);
+}
+
+.steps__text {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+}
+
+.steps__name {
+  font-size: var(--text-item);
+  font-weight: var(--font-bold);
+}
+
+.steps__desc {
+  color: var(--color-text-sub);
+  font-size: var(--text-label);
+}
+
+/* 화면이 짧아도 버튼이 내용 아래에 오도록 한다. Figma의 버튼 위치는 390 × 844 기준 위에서 694px이다. */
+.start-layout {
+  display: flex;
+  flex-direction: column;
+  min-height: calc(100vh / var(--page-zoom, 1) - var(--top-space));
+}
+
+.start-layout .page {
+  flex: 1;
+  width: 100%;
+}
+
+.start-layout .bottom-action {
+  width: 100%;
+  padding-bottom: 94px;
+}
+
+/* P-01 ⑤ 로그인 시간이 끝남. 로고 자리의 회색 안내 */
+.start__expired {
+  margin-bottom: 24px;
+}
+
+/* P-01 ② 저장한 정보. 회색 상자 안에 이름과 값 한 줄씩 */
+.saved-box {
+  margin: 28px 0 0;
+  padding: 4px 18px;
+  border-radius: var(--radius-card);
+  background: var(--color-bg-sub);
+}
+
+.saved-box__row {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 13px 0;
+}
+
+.saved-box__row + .saved-box__row {
+  border-top: 1px solid var(--color-line);
+}
+
+.saved-box dt {
+  color: var(--color-text-sub);
+  font-size: var(--text-label);
+}
+
+.saved-box dd {
+  margin: 0;
+  font-size: var(--text-label);
+  font-weight: var(--font-bold);
+  text-align: right;
+}
+
+/* P-01 ④ 불러오지 못함 */
+.start__error {
+  margin-top: 28px;
+}
+
+/* 아래 고정 영역의 글자 버튼들. "처음부터 다시 입력 | 수정하기"는 한 줄에 가운데로 */
+.start__links {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  margin-top: 8px;
+}
+
+.start__restart {
+  text-decoration: underline;
+}
+
+.start__auth {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  margin: 8px 0 0;
+}
+
+.start__auth .link-button {
+  text-decoration: underline;
+}
+
+.start__divider {
+  width: 1px;
+  height: 12px;
+  background: var(--color-line-strong);
+}
+
+.start__hint {
+  margin: 4px 0 0;
+  color: var(--color-text-sub);
+  font-size: var(--text-badge);
+  text-align: center;
+}
+
+@media (max-height: 760px) {
+  .start-layout .bottom-action {
+    padding-bottom: 20px;
+  }
+}
+
+/* 스플래시. 탭을 처음 열 때만 1초 동안 화면 전체를 덮는다 (js/splash.js) */
+.splash {
+  position: fixed;
+  inset: 0;
+  z-index: 1000; /* 시작 화면의 모든 것보다 위 */
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 22px;
+  background: var(--color-primary);
+  transition: opacity 0.3s ease; /* splash.js의 FADE_MS와 같다 */
+}
+
+.splash--leaving {
+  opacity: 0;
+  pointer-events: none; /* 사라지는 동안 뒤의 버튼을 누를 수 있게 한다 */
+}
+
+.splash__logo {
+  width: 148px;
+  height: 148px;
+}
+
+.splash__name {
+  margin: 0;
+  color: var(--color-on-primary);
+  font-size: var(--text-splash);
+  font-weight: var(--font-bold);
+  line-height: 1;
+  letter-spacing: -0.02em;
+}
+
+.splash__to {
+  color: var(--color-brand-gold);
+  font-size: 0.74em;
+}
+
+/* 움직임 줄이기를 켠 사람에게는 서서히 사라지지 않고 바로 없어진다 */
+@media (prefers-reduced-motion: reduce) {
+  .splash {
+    transition: none;
+  }
+}
+
+/* 웹(가로 1200px 이상)에서는 스플래시를 띄우지 않는다 (2026-10-19 팀장 결정) */
+@media (min-width: 1200px) {
+  .splash {
+    display: none;
+  }
+}

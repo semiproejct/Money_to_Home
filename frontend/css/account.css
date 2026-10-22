@@ -1,0 +1,95 @@
+/* 비밀번호 변경 (P-10)과 회원 탈퇴 (P-11). 담당: 김목산
+   틀과 입력란, 규칙 줄은 auth.css(로그인·회원가입)와 같다. 여기에는 탈퇴 화면의 경고 상자만 둔다.
+   색과 크기는 common.css :root의 이름으로만 쓴다.
+   기준: 확정 목업 v3의 C4, C5 (docs/mockups/C4.png, C5.png) */
+
+/* 지워지는 정보. 흰 바탕에 빨간 테두리, 마지막 줄만 빨간 글자 (C5) */
+.account__warning {
+  margin-bottom: 28px;
+  padding: 14px 16px;
+  border: 1.5px solid var(--color-error);
+  border-radius: var(--radius-card);
+  background: var(--color-bg);
+  color: var(--color-text);
+  font-size: var(--text-help);
+  line-height: 20px;
+}
+
+.account__warning-title {
+  margin: 0 0 4px;
+  font-weight: var(--font-bold);
+}
+
+.account__warning-list {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.account__warning-list li::before {
+  content: '·';
+  display: inline-block;
+  width: 12px;
+}
+
+.account__warning-note {
+  margin: 10px 0 0;
+  color: var(--color-error-text);
+  font-weight: var(--font-medium);
+}
+
+/* 탈퇴 확인 모달 (2026-10-15 팀장과 정함). 목업에 없어 화면의 빨간 상자와 버튼 모양을 따랐다 */
+.account-confirm {
+  width: calc(100% - 2 * var(--page-padding));
+  max-width: 340px;
+  padding: 0;
+  border: 0;
+  border-radius: var(--radius-card);
+  background: var(--color-bg);
+  color: var(--color-text);
+}
+
+.account-confirm::backdrop {
+  background: var(--color-dim);
+  opacity: 0.4;
+}
+
+.account-confirm__box {
+  padding: 24px 20px 20px;
+}
+
+.account-confirm__title {
+  margin: 0;
+  font-size: var(--text-item);
+  font-weight: var(--font-bold);
+}
+
+.account-confirm__text {
+  margin: 8px 0 0;
+  color: var(--color-text-sub);
+  font-size: var(--text-body);
+  line-height: var(--line-height);
+  word-break: keep-all;
+}
+
+.account-confirm__buttons {
+  display: flex;
+  gap: 8px;
+  margin-top: 20px;
+}
+
+.account-confirm__cancel,
+.account-confirm__ok {
+  flex: 1;
+}
+
+/* 지우는 버튼이라 빨강 */
+.account-confirm__ok {
+  background: var(--color-error);
+  color: var(--color-on-primary);
+}
+
+.account-confirm .button:focus-visible {
+  outline: 2px solid var(--color-primary);
+  outline-offset: 2px;
+}

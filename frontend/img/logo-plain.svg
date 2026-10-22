@@ -1,0 +1,9 @@
+<svg width="64" height="64" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
+<!-- 머니 to 홈 로고, 바탕 없는 것 (지도 화면 웹 머리 줄, 2026-10-20). 바탕 있는 것은 logo.svg -->
+<g fill="#FFC23D">
+<rect x="26" y="73" width="14" height="7" rx="3.5"/><rect x="26" y="64" width="14" height="7" rx="3.5"/>
+<rect x="43" y="73" width="14" height="7" rx="3.5"/><rect x="43" y="64" width="14" height="7" rx="3.5"/><rect x="43" y="55" width="14" height="7" rx="3.5"/>
+<rect x="60" y="73" width="14" height="7" rx="3.5"/><rect x="60" y="64" width="14" height="7" rx="3.5"/><rect x="60" y="55" width="14" height="7" rx="3.5"/><rect x="60" y="46" width="14" height="7" rx="3.5"/>
+</g>
+<polyline points="16,46 50,18 84,46" fill="none" stroke="#FFFFFF" stroke-width="7" stroke-linecap="round" stroke-linejoin="round"/>
+</svg>

@@ -1,0 +1,80 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <!-- 늘 밝은 화면으로 (2026-10-20). 휴대폰 브라우저의 "웹 페이지 어둡게"가 우리 색을 뒤집지 않게 한다 -->
+  <meta name="color-scheme" content="only light">
+  <title>로그인 · 머니 to 홈</title>
+  <link rel="stylesheet" href="css/common.css?v=20261021-2">
+  <link rel="stylesheet" href="css/auth.css?v=20261020-90">
+</head>
+<body data-page="login">
+  <!-- P-07 로그인. 담당: 김목산. Figma "확정 목업 v3"의 P-07, 와이어프레임 설명서 10장.
+       로그인하지 않아도 입력, 계산, 탐색은 모두 된다. 로그인은 저장에만 필요하다 (FR-USER-20).
+       아이디 기억하기(3차, FR-USER-18): 켜고 로그인하면 아이디만 쿠키에 남겨 다음에 채워 준다. -->
+  <!-- 웹(가로 1200px 이상)에서만 왼쪽 위에 보이는 로고. 안은 js/layout.js가 그린다. 모바일에는 없다. -->
+  <header class="header" id="header"></header>
+  <div class="top-space"></div>
+
+  <nav class="progress auth-nav" aria-label="뒤로">
+    <a class="progress__back" href="index.html" id="auth-back" aria-label="이전 화면">‹</a>
+  </nav>
+
+  <form id="login-form" class="form-page form-page--keys auth" novalidate>
+    <main class="page">
+      <!-- P-07 ③ 저장하려다 넘어온 경우. 시나리오 탭의 "결과 저장"이 store place.pending_save를 남기고 보냈을 때만 보인다 -->
+      <p class="notice auth__pending" id="login-pending" role="status" hidden>결과를 저장하려면 로그인이 필요합니다. 입력한 값은 이 기기에 그대로 남아 있습니다.</p>
+      <header class="form-page__head auth__head">
+        <h1 class="title">로그인</h1>
+        <p class="subtitle">저장한 정보를 이어서 볼 수 있습니다.</p>
+      </header>
+
+      <div class="field" id="login-id-field">
+        <label class="field__label" for="login-id">아이디</label>
+        <div class="field__row">
+          <input class="field__input auth__input" id="login-id" name="login_id" type="text" autocomplete="username"
+                 autocapitalize="off" spellcheck="false" maxlength="20">
+        </div>
+      </div>
+
+      <div class="field" id="login-password-field">
+        <label class="field__label" for="login-password">비밀번호</label>
+        <div class="field__row">
+          <input class="field__input auth__input" id="login-password" name="password" type="password"
+                 autocomplete="current-password" aria-describedby="login-message">
+        </div>
+        <div class="field__help">
+          <span id="login-message" role="alert"></span>
+        </div>
+      </div>
+
+      <label class="auth__check auth__remember">
+        <input class="auth__checkbox" id="login-remember" type="checkbox">
+        <span>아이디 기억하기</span>
+      </label>
+    </main>
+
+    <div class="bottom-action">
+      <p class="snackbar" id="login-error" role="alert" hidden></p>
+      <button type="submit" class="button button--primary" id="login-submit" disabled>로그인</button>
+      <p class="auth__links">
+        <a class="auth__link" href="signup.html">회원가입</a>
+        <span class="auth__divider" aria-hidden="true"></span>
+        <a class="auth__link" href="index.html">로그인 없이 계속하기</a>
+      </p>
+      <p class="auth__note">아이디 찾기와 비밀번호 초기화는 제공하지 않습니다.</p>
+    </div>
+  </form>
+
+  <!-- 공통 JavaScript. 모든 화면이 이 순서로 먼저 불러 쓴다. 그 아래에 화면의 파일을 둔다. -->
+  <script src="js/api.js"></script>
+  <script src="js/store.js"></script>
+  <script src="js/format.js?v=20261019-2"></script>
+  <script src="js/guard.js"></script>
+  <script src="js/layout.js?v=20261019-1"></script>
+  <script src="js/form-flow.js?v=20261021-2"></script>
+  <script src="js/auth.js?v=20261021-2"></script>
+  <script src="js/scrollbar.js?v=20261020-6"></script>
+</body>
+</html>

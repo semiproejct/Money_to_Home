@@ -1,0 +1,218 @@
+/* 로그인 (P-07)과 회원가입 (P-08). 담당: 김목산
+   입력 화면(P-02 ~ P-04)과 같은 틀(common.css의 .form-page, .field, .bottom-action)을 쓰고, 여기에는 다른 것만 둔다.
+   색과 크기는 common.css :root의 이름으로만 쓴다.
+   기준: 확정 목업 v3의 P-07, P-08 (docs/mockups/P07_01.png ~ P08_07.png) */
+
+/* 진행 바 자리에 ‹ 하나만 둔다 */
+.auth-nav {
+  padding-right: var(--page-padding);
+}
+
+/* 진행 바가 없어도 같은 높이를 쓴다. 가입 완료 화면에는 ‹ 줄도 없다 */
+.auth-done {
+  min-height: calc(100vh / var(--page-zoom, 1) - var(--top-space));
+}
+
+.auth__head {
+  padding-bottom: 24px;
+}
+
+/* P-07 ③ 저장하려다 넘어온 경우의 회색 상자. 제목 위에 둔다 */
+.auth__pending {
+  margin-bottom: 20px;
+}
+
+/* 아이디와 비밀번호는 입력 화면의 숫자보다 조금 작게 */
+.auth__input {
+  font-size: var(--text-title);
+}
+
+/* 비밀번호의 점 */
+.auth__input[type='password'] {
+  letter-spacing: 2px;
+}
+
+/* 규칙 줄. ✓ 맞음, ✕ 어김, · 아직. 색만이 아니라 표시로도 구분한다 (P-08 ②) */
+.auth__rules {
+  margin: 8px 0 0;
+  padding: 0;
+  list-style: none;
+}
+
+.auth__rule {
+  color: var(--color-text-sub);
+  font-size: var(--text-help);
+  line-height: 21px;
+}
+
+.auth__rule::before {
+  content: '·';
+  display: inline-block;
+  width: 14px;
+}
+
+.auth__rule[data-state='ok'] {
+  color: var(--color-text);
+  font-weight: var(--font-bold);
+}
+
+.auth__rule[data-state='ok']::before {
+  content: '✓';
+}
+
+.auth__rule[data-state='bad'] {
+  color: var(--color-error-text);
+  font-weight: var(--font-bold);
+}
+
+.auth__rule[data-state='bad']::before {
+  content: '✕';
+}
+
+/* 입력란 아래 한 줄 문구. "이미 사용 중인 아이디입니다.", "비밀번호가 서로 다릅니다.", "✓ 비밀번호가 같습니다" */
+.auth__message {
+  min-height: 0;
+  margin: 6px 0 0;
+  color: var(--color-text-sub);
+  font-size: var(--text-help);
+  line-height: 19px;
+}
+
+.auth__message:empty {
+  display: none;
+}
+
+.field--error .auth__message {
+  color: var(--color-error-text);
+}
+
+/* 오류가 있으면 입력 중에도 밑줄이 빨갛다 (P-07 ②, P-08 ②) */
+.auth .field--error .field__row:focus-within {
+  border-bottom-color: var(--color-error);
+  box-shadow: 0 1px 0 var(--color-error);
+}
+
+/* 단계마다 입력란이 쌓이므로 입력란 사이를 입력 화면보다 조금 좁힌다 */
+.auth .field {
+  padding-bottom: 18px;
+}
+
+/* 로그인 실패 문구는 설명 줄 자리(.field__help)에 넣는다 */
+.auth .field__help:empty,
+.auth .field__help:has(span:empty) {
+  min-height: 0;
+}
+
+/* 버튼 아래 글자 링크. "회원가입 | 로그인 없이 계속하기" */
+.auth__links {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  margin: 8px 0 0;
+}
+
+.auth__link {
+  display: inline-flex;
+  align-items: center;
+  min-height: var(--touch-size);
+  color: var(--color-text);
+  font-size: var(--text-body);
+  font-weight: var(--font-medium);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+.auth__divider {
+  width: 1px;
+  height: 14px;
+  background: var(--color-line-strong);
+}
+
+.auth__note {
+  margin: 8px 0 0;
+  color: var(--color-text-sub);
+  font-size: var(--text-help);
+  text-align: center;
+}
+
+/* 가입 완료의 동그란 표시 (P-08 ⑦) */
+.auth-done .page {
+  padding-top: 40px;
+}
+
+.auth-done__mark {
+  position: relative;
+  width: 64px;
+  height: 64px;
+  margin-bottom: 24px;
+  border: 3px solid var(--color-primary);
+  border-radius: 50%;
+}
+
+/* 체크 표시. 아래와 오른쪽 테두리만 남긴 사각형을 돌린다 */
+.auth-done__mark::after {
+  content: '';
+  position: absolute;
+  top: 15px;
+  left: 22px;
+  width: 14px;
+  height: 25px;
+  border-right: 3px solid var(--color-primary);
+  border-bottom: 3px solid var(--color-primary);
+  transform: rotate(45deg);
+}
+
+.auth-done .subtitle {
+  margin-top: 10px;
+}
+
+/* 체크 상자 줄. "아이디 기억하기"(P-07 ①), "수집 항목과 목적에 동의합니다"(P-08 ⑥).
+   글자까지 눌러도 켜지고, 누르는 영역은 44px 이상이다 */
+.auth__check {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-height: 44px;
+  color: var(--color-text);
+  font-size: var(--text-body);
+  cursor: pointer;
+}
+
+.auth__checkbox {
+  flex: none;
+  width: 20px;
+  height: 20px;
+  margin: 0;
+  accent-color: var(--color-primary);
+  cursor: pointer;
+}
+
+.auth__checkbox:focus-visible {
+  outline: 2px solid var(--color-primary);
+  outline-offset: 2px;
+}
+
+.auth__remember {
+  margin-top: 16px;
+}
+
+/* P-08 ⑥ 수집 항목과 목적의 회색 상자 */
+.auth__consent {
+  margin-top: 20px;
+  padding: 4px 14px 14px;
+  border-radius: var(--radius-card);
+  background: var(--color-bg-sub);
+}
+
+.auth__consent-title {
+  font-weight: var(--font-bold);
+}
+
+.auth__consent-text {
+  margin: 0 0 0 30px; /* 체크 상자(20) + 간격(10) 만큼 들여 글자 줄과 맞춘다 */
+  color: var(--color-text-sub);
+  font-size: var(--text-help);
+  line-height: 20px;
+  word-break: keep-all; /* 좁으면 낱말 단위로 줄을 바꾼다 */
+}

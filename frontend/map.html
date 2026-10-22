@@ -1,0 +1,342 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <!-- 늘 밝은 화면으로 (2026-10-20). 휴대폰 브라우저의 "웹 페이지 어둡게"가 우리 색을 뒤집지 않게 한다 -->
+  <meta name="color-scheme" content="only light">
+  <title>지도 · 머니 to 홈</title>
+  <!-- 카카오맵 SDK · 지도 조각 · 로드뷰를 받을 곳에 미리 연결해 둔다 (2026-10-20, 처음 여는 시간 줄이기) -->
+  <link rel="preconnect" href="https://dapi.kakao.com">
+  <link rel="preconnect" href="https://t1.daumcdn.net">
+  <link rel="preconnect" href="https://mts.kakaocdn.net">
+  <!-- 모든 화면이 common.css를 먼저, 화면의 CSS를 그 뒤에 불러 쓴다. -->
+  <link rel="stylesheet" href="css/common.css?v=20261021-2">
+  <!-- ?v= 는 버전 표시다. 이 화면이 부르는 CSS나 JS를 고치면 그 파일의 숫자를 올린다. 브라우저가 예전 파일을 캐시에서 꺼내 쓰지 않게 한다. -->
+  <link rel="stylesheet" href="css/list.css?v=20261020-4">
+  <link rel="stylesheet" href="css/map.css?v=20261020-92">
+  <link rel="stylesheet" href="css/sheet.css?v=20261021-2">
+  <link rel="stylesheet" href="css/similar.css?v=20261015-3">
+  <link rel="stylesheet" href="css/glossary.css?v=20261015-2">
+  <link rel="stylesheet" href="css/scenario.css?v=20261021-mp1">
+  <link rel="stylesheet" href="css/my-menu.css?v=20261021-mp1"> <!-- 마이페이지 메뉴 (2026-10-21, 박채은) -->
+  <link rel="stylesheet" href="css/scenario-charts.css?v=20261019-2">
+  <link rel="stylesheet" href="css/share.css?v=20261020-90">
+  <link rel="stylesheet" href="css/search.css?v=20261015-2">
+  <link rel="stylesheet" href="css/filter.css?v=20261015-2">
+  <link rel="stylesheet" href="css/region.css?v=20261015-2">
+  <!-- 새 스타일 (2026-10-18). 위의 모양을 덮어쓴다. 빼면 예전 모양 -->
+  <link rel="stylesheet" href="css/new-style.css?v=20261020-9">
+  <!-- 웹(1024px 이상) 배치 (박채은). 다른 CSS 뒤에 읽어 웹에서만 덮어쓴다 -->
+  <link rel="stylesheet" href="css/map-web.css?v=20261020-99">
+</head>
+<body class="map-body">
+  <!-- P-05 ① 지도 기본. Figma "확정 목업 v3"의 "v3 · P-05 ① 지도 기본" (node 2037:3).
+       모바일에는 헤더가 없다. 맨 위는 내 조건 줄이고, 그 아래를 지도가 가득 채운다.
+       담당: 안세환. 목록(list.js, 김목산)과 시나리오 탭(scenario.js, 박채은)은 아래 창의 빈 자리에 각자 파일에서 그린다. -->
+
+  <!-- 지도 화면의 틀. 1023px 이하는 창을 가득 채우는 모바일 배치, 1024px 이상은 웹 배치(css/map-web.css) -->
+  <div class="map-app">
+
+  <!-- 웹(1024px 이상)에서만 보이는 머리 줄과 로고 (css/map-web.css, 박채은). 모바일에는 헤더가 없다.
+       로고 모양은 입력 화면과 같다 (common.css의 .header__home). 누르면 시작 화면 -->
+  <div class="map-web-bar" aria-hidden="true"></div>
+  <div class="map-web-logo">
+    <a class="header__home" href="index.html" aria-label="머니 to 홈 시작 화면">
+      <img class="header__logo" src="img/logo-plain.svg?v=20261020-1" alt="">
+      <span class="header__name">머니<span class="header__to">to</span>홈</span>
+    </a>
+  </div>
+
+  <!-- 웹(1024px 이상)의 조건 줄. 머리 줄 바로 아래 (css/map-web.css, js/map-web.js, 김목산 2026-10-20).
+       처음에는 [조건] 하나. 조건 창에서 구·동을 고르면 옆에 지역 칩이 나온다. 그 뒤에 넣은 조건 칩(.chip-row), 오른쪽 끝에 실거래 기준일과 안내(!).
+       칩 줄과 안내는 map-web.js가 웹일 때만 이 줄로 옮긴다 (id와 동작은 그대로). 모바일에서는 숨긴다 -->
+  <div class="map-web-filter" id="map-web-filter">
+    <button type="button" class="map-web-filter__button" id="map-web-filter-open" aria-haspopup="dialog">
+      <svg width="16" height="16" viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+        <path d="M14 6h7M3 6h7M12 12h9M3 12h5M16 18h5M3 18h9M12 4v4M10 10v4M14 16v4"/>
+      </svg>
+      조건
+    </button>
+    <button type="button" class="map-web-filter__button map-web-filter__region" id="map-web-region" aria-haspopup="dialog" hidden></button>
+    <span class="map-web-filter__sep" aria-hidden="true"></span>
+    <div class="map-web-filter__tags" id="map-web-filter-tags"></div>
+    <div class="map-web-filter__end" id="map-web-filter-end">
+      <span class="map-web-filter__base" id="map-web-base"></span>
+    </div>
+  </div>
+
+  <!-- 내 조건 줄 (높이 40). 문장이 넘치면 말줄임 -->
+  <div class="condition-bar">
+    <p class="condition-bar__text">
+      <span class="condition-bar__label">내 조건</span>
+      <span class="condition-bar__sentence" id="condition-sentence"></span>
+    </p>
+    <div class="condition-bar__actions">
+      <a class="condition-bar__link condition-bar__link--edit" href="profile.html">수정</a>
+      <a class="condition-bar__link" href="login.html" id="login-link">로그인</a>
+    </div>
+  </div>
+
+  <main class="map-area">
+    <!-- 지도. 카카오맵 JavaScript SDK가 #kakao-map 안에 지도와 아파트 말풍선을 그린다 (map-view.js).
+         SDK는 지도 그림만 불러온다. 주소를 좌표로 바꾸는 기능(services)은 불러오지 않는다.
+         좌표는 data/geocode.py가 미리 DB에 넣고, 화면은 DB의 좌표만 읽는다 (NFR-08). -->
+    <div class="map" id="map">
+      <div class="map__kakao" id="kakao-map" aria-label="지도"></div>
+      <!-- 불러오는 중, 불러오지 못함 (P-05 ⑰) -->
+      <div class="map__message" id="map-message">
+        <p class="map__message-text" id="map-message-text">지도를 불러오는 중입니다.</p>
+        <button type="button" class="link-button" id="map-retry" hidden>다시 시도</button>
+      </div>
+    </div>
+
+    <!-- 검색 줄 (2026-10-18 새 스타일): 알약 모양 한 줄. 왼쪽 돋보기, 아파트 이름 입력란, 오른쪽 조건 아이콘.
+         구·동 선택은 조건 창 맨 위로 옮겼다. 지금 보는 지역의 이름(#region-name)은 화면 읽기 프로그램용으로만 둔다 -->
+    <div class="search-row">
+      <label class="search-box">
+        <svg class="search-box__icon" width="22" height="22" viewBox="0 0 24 24" aria-hidden="true">
+          <circle cx="11" cy="11" r="7" fill="none" stroke="currentColor" stroke-width="2"/>
+          <path d="M20 20l-3.5-3.5" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+        </svg>
+        <span class="search-box__divider" aria-hidden="true"></span>
+        <input class="search-box__input" type="search" placeholder="아파트 명을 입력해주세요." aria-label="아파트 이름 검색">
+      </label>
+      <button type="button" class="search-filter" id="filter-open" aria-haspopup="dialog" aria-label="조건과 지역">
+        <svg width="24" height="24" viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+          <path d="M14 6h7M3 6h7M12 12h9M3 12h5M16 18h5M3 18h9M12 4v4M10 10v4M14 16v4"/>
+        </svg>
+        <span class="search-filter__dot" aria-hidden="true"></span>
+      </button>
+      <span class="visually-hidden" id="region-name" aria-live="polite"></span>
+    </div>
+
+    <!-- 이름 검색 결과 (P-05 ⑭, ⑮). 검색창에 글자를 적으면 김목산의 js/search.js가 이 안에 그린다. -->
+    <div id="search-results" hidden></div>
+
+    <!-- 넣은 조건 칩 줄. 넣은 조건만 "면적 59~84㎡ ✕"처럼 칩으로 (조건이 없으면 비어 있다).
+         map-view.js의 renderChips()가 #filter-tags 안에 그린다. 글자를 누르면 조건 창, ✕를 누르면 그 조건만 푼다 -->
+    <div class="chip-row">
+      <div class="chip-row__tags" id="filter-tags"></div>
+    </div>
+
+    <!-- 조건 칩 아래 검은 알림. 잠시 뒤 사라진다 (와이어프레임 P-05 ㉑, ⑪) -->
+    <p class="map-toast" id="map-toast" role="status" hidden></p>
+
+    <!-- 오른쪽 아래 버튼: ㎡/평 전환, 현재 위치, 확대·축소 (2차) -->
+    <!-- 넓게 볼 때 선택한 아파트 카드 (웹만, 지도 왼쪽 아래). map-view.js의 renderPickedCard가 채운다 (2026-10-20) -->
+    <section class="picked-card" id="picked-card" aria-label="선택한 아파트" hidden>
+      <header class="picked-card__head">
+        <span class="picked-card__badge" aria-hidden="true">
+          <svg viewBox="0 0 24 24"><path d="M4 21V5.5L12 3l8 2.5V21h-6v-4h-4v4H4zm3-13v2h2V8H7zm4 0v2h2V8h-2zm4 0v2h2V8h-2zM7 12v2h2v-2H7zm4 0v2h2v-2h-2zm4 0v2h2v-2h-2z"/></svg>
+        </span>
+        <div class="picked-card__titles">
+          <strong class="picked-card__title" data-picked="name"></strong>
+          <span class="picked-card__place" data-picked="place"></span>
+        </div>
+        <button type="button" class="picked-card__close" aria-label="선택한 아파트 카드 닫기">✕</button>
+      </header>
+      <dl class="picked-card__rows">
+        <div class="picked-card__row"><dt>전용면적</dt><dd data-picked="area"></dd></div>
+        <div class="picked-card__row"><dt>매매가</dt><dd data-picked="price"></dd></div>
+        <div class="picked-card__row"><dt>역세권</dt><dd><span class="picked-card__chip picked-card__chip--subway" aria-hidden="true">M</span><span data-picked="subway"></span></dd></div>
+        <div class="picked-card__row"><dt>주변 교통</dt><dd><span class="picked-card__chip picked-card__chip--bus" aria-hidden="true">B</span><span data-picked="bus"></span></dd></div>
+      </dl>
+      <button type="button" class="picked-card__go">아파트 다시 보기</button>
+    </section>
+
+    <div class="map-controls">
+      <!-- 모바일만: 표시 · 시설 창을 아래에서 올린다 (네이버 · 카카오 지도의 레이어 단추처럼, 2026-10-20). 웹은 지도 왼쪽 위 상자를 쓴다 -->
+      <button type="button" class="map-button map-button--layers" id="legend-open" aria-label="표시 · 시설 보기" aria-controls="facility-tab">
+        <svg class="map-button__icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5C6.5 5 2.4 8.6 1 12c1.4 3.4 5.5 7 11 7s9.6-3.6 11-7c-1.4-3.4-5.5-7-11-7zm0 11.5A4.5 4.5 0 1 1 12 7.5a4.5 4.5 0 0 1 0 9zm0-7a2.5 2.5 0 1 0 0 5 2.5 2.5 0 0 0 0-5z"/></svg>
+      </button>
+      <button type="button" class="map-button map-button--unit" id="unit-button" aria-label="면적 단위 바꾸기">
+        <span class="map-button__main" id="unit-main">㎡</span>
+        <span class="map-button__sub" id="unit-sub">평</span>
+      </button>
+      <button type="button" class="map-button map-button--locate" id="locate-button" aria-label="현재 위치">
+        <!-- 임시 아이콘. Figma의 "과녁"(2037:83)을 내보내면 img/icon-locate.svg로 바꾼다. -->
+        <svg width="24" height="24" viewBox="0 0 24 24" aria-hidden="true">
+          <circle cx="12" cy="12" r="6.5" fill="none" stroke="currentColor" stroke-width="2"/>
+          <circle cx="12" cy="12" r="2.5" fill="currentColor"/>
+          <path d="M12 1.5v4M12 18.5v4M1.5 12h4M18.5 12h4" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+        </svg>
+      </button>
+      <div class="zoom-buttons">
+        <button type="button" class="map-button" id="zoom-in" aria-label="확대">+</button>
+        <button type="button" class="map-button" id="zoom-out" aria-label="축소">−</button>
+      </div>
+    </div>
+
+    <!-- 왼쪽 위(검색 줄 아래): 안내 아이콘. 범례는 왼쪽 아래 상자로 옮겼다 (2026-10-20) -->
+    <div class="info-tip">
+      <button type="button" class="info-tip__button" id="info-button" aria-label="표시되는 아파트 안내" aria-expanded="false" aria-controls="info-text">!</button>
+      <!-- 실거래 기록 안내 (FR-COMMON-02). 문구의 끝에 수집 기준일을 붙이는 것은 2차 (와이어프레임 B5) -->
+      <p class="info-tip__text" id="info-text" role="tooltip" hidden>
+        판매 중인 매물이 아니라 최근 1년 실거래 기록입니다. 금액은 가정에 따른 추정치입니다.
+      </p>
+    </div>
+
+    <!-- 왼쪽 아래(카카오 로고 위): 동그란 위치 단추(늘 보임)와 범례 · 주변 시설 체크 칸. 펼치면 한 상자가 단추까지 감싼다 (2026-10-20 세환. 단추 자리는 그대로).
+         단추를 누르면 상자를 접고 편다. 처음에는 펼침, 접은 상태는 기억한다 (map-view.js의 renderLegend)
+         위: 말풍선 구분(지금 · 기간 내 · 부족)과 선택한 아파트
+         아래(옅은 선 밑): 주변 시설 체크 칸. map-view.js의 renderFacilityFilter가 채운다. 축척과 상관없이 늘 보인다 (아이콘은 100m 이하에서만 뜬다)
+         모바일은 아파트 창이 열리면 상자를 숨기고(창에 가린다), 웹 배치는 창이 열려 있어도 보인다 -->
+    <!-- 모바일에서 표시 · 시설 창이 올라왔을 때 뒤를 어둡게. 누르면 닫는다 -->
+    <div class="facility-dim" id="facility-dim" hidden></div>
+    <div class="facility-tab" id="facility-tab">
+      <!-- 모바일 창의 머리 (웹에서는 숨긴다) -->
+      <div class="facility-sheet__head">
+        <strong class="facility-sheet__title">표시 · 시설</strong>
+        <button type="button" class="facility-sheet__close" id="legend-close" aria-label="표시 · 시설 닫기">✕</button>
+      </div>
+      <div class="map-key" id="legend-list">
+        <ul class="legend__list">
+          <li class="legend__item"><span class="legend__swatch legend__swatch--now"></span>지금<span class="visually-hidden"> 가능</span></li>
+          <li class="legend__item"><span class="legend__swatch legend__swatch--within"></span>기간 내<span class="visually-hidden"> 가능</span></li>
+          <li class="legend__item"><span class="legend__swatch legend__swatch--lack"></span><span class="visually-hidden">자금 </span>부족</li>
+        </ul>
+        <ul class="legend__list map-key__marks">
+          <li class="legend__item">
+            <svg class="map-key__pin" viewBox="0 0 24 32" aria-hidden="true"><path d="M12 1C6 1 1.5 5.4 1.5 11.2 1.5 18.6 12 31 12 31s10.5-12.4 10.5-19.8C22.5 5.4 18 1 12 1zm0 14.3a4.1 4.1 0 1 1 0-8.2 4.1 4.1 0 0 1 0 8.2z"/></svg>
+            선택한 아파트
+          </li>
+        </ul>
+        <div class="facility-filter" id="facility-filter" role="group" aria-label="지도에 보일 주변 시설"></div>
+      </div>
+      <button type="button" class="facility-tab__button" id="legend-toggle" aria-expanded="true" aria-controls="legend-list" aria-label="범례와 주변 시설 보기">
+        <span class="facility-tab__round">
+          <svg class="facility-tab__pin" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2a7 7 0 0 0-7 7c0 5.2 7 13 7 13s7-7.8 7-13a7 7 0 0 0-7-7zm0 9.5A2.5 2.5 0 1 1 12 6.5a2.5 2.5 0 0 1 0 5z"/></svg>
+        </span>
+      </button>
+    </div>
+
+    <!-- 가운데 아래: 축척. 확대 수준에 따라 거리와 막대 길이가 바뀐다 (map-view.js의 renderScale) -->
+    <div class="map-scale" aria-hidden="true">
+      <span class="map-scale__label" id="scale-label">200m</span>
+      <span class="map-scale__bar" id="scale-bar"></span>
+    </div>
+
+    <!-- 오른쪽 아래: 목록 보기. 누르면 아래 창 80%에 목록이 뜬다 (P-06 ⑤) -->
+    <button type="button" class="list-button" id="list-button">
+      <span class="list-button__icon" aria-hidden="true"><span></span><span></span><span></span></span>
+      목록
+    </button>
+  </main>
+
+  <!-- 아래 창 (P-06). 지도(.map-area)와 따로 둔다. 웹 배치에서는 왼쪽 단으로 옮긴다 (와이어프레임 W7 ~ W10).
+       단계(30%, 80%, 전체)는 sheet.js가 .map-app의 data-sheet로 바꾼다. 처음에는 닫혀 있다.
+       구·동 선택 창(z-index 5)은 이 창(z-index 3)보다 위에 뜬다. -->
+  <section class="sheet" id="sheet" aria-label="아래 창" hidden>
+    <!-- 손잡이. 누르면 다음 단계로 바뀌고, 손잡이와 머리 부분을 위아래로 끌 수 있다 (sheet.js) -->
+    <button type="button" class="sheet__handle" id="sheet-handle" aria-label="창 키우기">
+      <span class="sheet__grip" aria-hidden="true"></span>
+    </button>
+
+    <!-- 목록 (P-06 ⑤). 김목산의 list.js가 이 안에 그린다. -->
+    <div id="apt-list"></div>
+
+    <!-- 아파트 창 (P-06 ⑥ 30%, ⑦ 80%). apartment.js가 채운다. 값은 모두 A-05 응답에 있는 것이다. -->
+    <div class="apt" id="apartment-panel" hidden>
+      <div class="apt__head">
+        <div class="apt__top">
+          <!-- 목록에서 열었으면 "← 치평동 목록"이 오고, 이름과 배지는 다음 줄로 내려간다 -->
+          <div class="apt__lead" id="apt-lead">
+            <button type="button" class="apt__back" id="apt-back" hidden></button>
+            <div class="apt__title" id="apt-title">
+              <h2 class="apt__name" id="apt-name"></h2>
+              <span class="badge" id="apt-badge"></span>
+            </div>
+          </div>
+          <div class="apt__nav">
+            <button type="button" class="apt__nav-button" id="apt-prev" aria-label="이전 아파트">‹</button>
+            <button type="button" class="apt__nav-button" id="apt-next" aria-label="다음 아파트">›</button>
+            <button type="button" class="apt__nav-button apt__nav-button--close" id="apt-close" aria-label="닫기">✕</button>
+          </div>
+        </div>
+        <div class="apt__title-row" id="apt-title-row" hidden></div>
+
+        <!-- 면적 고르기. 처음에는 평균가가 가장 낮은 면적이 골라져 있다 -->
+        <div class="apt__areas">
+          <div class="apt__area-list" id="apt-areas" role="group" aria-label="면적 고르기"></div>
+          <div class="apt__unit" role="group" aria-label="면적 단위">
+            <button type="button" class="apt__unit-option" data-unit="m2" aria-pressed="true">㎡</button>
+            <button type="button" class="apt__unit-option" data-unit="pyeong" aria-pressed="false">평</button>
+          </div>
+        </div>
+
+        <!-- 탭 (80% 이상). 아파트를 열면 아파트 정보 탭이 먼저 보인다 -->
+        <div class="apt__tabs" role="tablist" aria-label="아파트 창">
+          <button type="button" class="apt__tab" role="tab" id="apt-tab-info" aria-controls="apartment-info" aria-selected="true">아파트 정보</button>
+          <button type="button" class="apt__tab" role="tab" id="apt-tab-scenario" aria-controls="scenario-panel" aria-selected="false">시나리오</button>
+        </div>
+      </div>
+
+      <!-- 30%: 평균가와 여유자금 (또는 부족자금) -->
+      <div class="apt__money">
+        <div class="apt__money-item">
+          <p class="apt__label">최근 1년 실거래 평균</p>
+          <p class="apt__value" id="apt-price"></p>
+        </div>
+        <div class="apt__money-item apt__money-item--end">
+          <p class="apt__label" id="apt-basis"></p>
+          <p class="apt__value" id="apt-gap"></p>
+        </div>
+      </div>
+      <p class="apt__hint">위로 올리면 아파트 정보와 시나리오</p>
+
+      <!-- 80% 이상: 탭의 내용 -->
+      <div class="apt__panels">
+        <!-- 아파트 정보 탭 (P-06 ⑦). 아파트 한 곳 API(A-06)를 붙일 때 apartment.js가 채운다 -->
+        <div class="apt__panel" id="apartment-info" role="tabpanel" aria-labelledby="apt-tab-info"></div>
+        <!-- 시나리오 탭 (P-06 ⑧). 박채은의 scenario.js가 이 안에 그린다. 자리 이름은 채은과 맞춘다 -->
+        <div class="apt__panel" id="scenario-panel" role="tabpanel" aria-labelledby="apt-tab-scenario" hidden></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 웹(1024px 이상)에서 패널을 접고 펴는 얇은 손잡이. 목록 패널과 아파트 패널의 오른쪽 끝 가운데에 붙는다 (js/map-web.js) -->
+  <button type="button" class="map-web-fold map-web-fold--list" id="map-web-fold" aria-expanded="true" aria-label="목록 접기">
+    <span class="map-web-fold__icon" aria-hidden="true">‹</span>
+  </button>
+  <button type="button" class="map-web-fold map-web-fold--apt" id="map-web-apt-fold" aria-expanded="true" aria-label="아파트 창 접기">
+    <span class="map-web-fold__icon" aria-hidden="true">‹</span>
+  </button>
+
+  <!-- 구·동 선택 (P-05 ⑬). 지역 버튼을 누르면 js/region.js가 이 안에 그린다. -->
+  <section class="region-sheet" id="region-sheet" aria-label="지역 선택" hidden></section>
+
+  <!-- 조건 (P-05 ②). 조건 칩을 누르면 김목산의 js/filter.js가 이 안에 그린다. -->
+  <section class="filter-sheet" id="filter-sheet" aria-label="조건" hidden></section>
+
+  </div>
+
+  <!-- 공통 JavaScript. 모든 화면이 이 순서로 먼저 불러 쓴다. 그 아래에 화면의 파일을 둔다. -->
+  <script src="js/api.js?v=20261015-2"></script>
+  <script src="js/store.js?v=20261015-2"></script>
+  <script src="js/format.js?v=20261019-2"></script>
+  <script src="js/guard.js?v=20261015-2"></script>
+  <script src="js/layout.js?v=20261015-2"></script>
+  <script src="js/account.js?v=20261021-mp1"></script>
+  <script src="js/my-menu.js?v=20261021-mp1"></script> <!-- 마이페이지 메뉴 (2026-10-21, 박채은) -->
+  <script src="js/region.js?v=20261015-2"></script>
+  <script src="js/filter.js?v=20261018-1"></script>
+  <script src="js/search.js?v=20261015-2"></script>
+  <script src="js/list.js?v=20261020-6"></script>
+  <script src="js/sheet.js?v=20261021-3"></script>
+  <script src="js/glossary.js?v=20261015-2"></script>
+  <script src="js/scenario.js?v=20261021-mp1"></script>
+  <!-- 시나리오 탭의 그래프 두 개 (실거래, 같은 동 안의 위치). A-27을 부른다 -->
+  <script src="js/scenario-charts.js?v=20261019-7"></script>
+  <script src="js/similar.js?v=20261020-1"></script>
+  <!-- 공유 · 주소 복사 (김목산). apartment.js가 쓰므로 그보다 먼저 -->
+  <script src="js/share.js?v=20261019-2"></script>
+  <script src="js/apartment.js?v=20261021-mp1"></script>
+  <!-- 광주 5개 구 경계 (FR-MAP-28). map-view.js가 쓰므로 그보다 먼저 불러온다 -->
+  <script src="js/boundary.js?v=20261020-7"></script>
+  <script src="js/map-view.js?v=20261021-mp1"></script>
+  <!-- 웹(1024px 이상) 배치 (박채은). 아래 창(sheet.js)을 왼쪽 패널로 쓰게 감싼다. 그래서 맨 마지막에 둔다 -->
+  <script src="js/map-web.js?v=20261020-13"></script>
+  <script src="js/scrollbar.js?v=20261020-6"></script>
+</body>
+</html>

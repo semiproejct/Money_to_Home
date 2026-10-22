@@ -1,0 +1,66 @@
+/* 지도 화면의 마이페이지 메뉴 (2026-10-21, js/my-menu.js). 담당: 박채은
+   내 조건 줄의 "로그인" 자리에 "마이페이지 ▾". 색과 크기는 common.css의 이름만 쓴다. */
+
+.my-menu__button {
+  gap: 4px;
+  border: 0;
+  background: transparent;
+  font-family: inherit;
+  font-size: inherit;
+  cursor: pointer;
+}
+
+/* 내 조건 줄의 문장 앞에 붙는 재무정보 이름 ("재무정보 1 ·") */
+.condition-bar__profile {
+  flex-shrink: 0;
+  margin-right: 4px;
+  color: inherit;
+}
+
+.my-menu {
+  position: fixed;
+  z-index: 60;
+  display: flex;
+  flex-direction: column;
+  width: 220px;
+  overflow: hidden;
+  border-radius: var(--radius-card);
+  background: var(--color-bg);
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.16);
+  font-size: var(--text-body);
+}
+
+.my-menu__item {
+  display: flex;
+  align-items: center;
+  height: var(--touch-size);
+  padding: 0 16px;
+  border: 0;
+  border-top: 1px solid var(--color-line);
+  background: var(--color-bg);
+  color: var(--color-text);
+  font-family: inherit;
+  font-size: var(--text-body);
+  text-align: left;
+  cursor: pointer;
+}
+
+.my-menu__item:first-child {
+  border-top: 0;
+}
+
+.my-menu__item--out {
+  color: var(--color-error-text);
+  font-weight: var(--font-bold);
+}
+
+.my-menu__now {
+  margin-left: auto;
+  color: var(--color-text-sub);
+  font-size: var(--text-help);
+}
+
+.my-menu__item:focus-visible {
+  outline: 2px solid var(--color-primary);
+  outline-offset: -2px;
+}

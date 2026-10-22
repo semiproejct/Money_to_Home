@@ -1,0 +1,15 @@
+gu,dong,jibun,name,households,override,confidence,source_url,note,checked_on
+서구,쌍촌동,970-6,포레스힐(도시형생활주택),96,,출처 2개,https://hogangnono.com/apt/4aA12 https://realty.daangn.com/complexes/17975834,건축물대장에서 찾지 못함. 디스코는 102호로 적음,2026-10-14
+남구,봉선동,984,모아1단지1차,297,,출처 1개+합계 일치,https://knowingasset.com/app/land/house/2915511500109840000 https://m.richgo.ai/realty/place/middle/S050000392/danji,한 번지에 1·2차. 1차 297 + 2차 340 = 637 (번지 전체),2026-10-14
+남구,봉선동,984,모아1단지2차,340,,출처 1개+합계 일치,https://knowingasset.com/app/land/house/2915511500109840000 https://m.richgo.ai/realty/place/middle/S050000392/danji,한 번지에 1·2차. 1차 297 + 2차 340 = 637 (번지 전체),2026-10-14
+남구,방림동,556-1,라인효친1,376,,출처 1개+합계 일치,https://aptgin.com/home/popup/pp_danji/apt/am994em0 https://www.aptrank.com/apt_detail.php?aptnameuid=12352,한 번지에 1·2차. 1차 376 + 2차 494 = 870 (아파트랭킹 합계),2026-10-14
+남구,방림동,556-1,라인효친2,494,,출처 1개+합계 일치,https://zippoom.com/review/GYr_C9ML-mmaGD2V8KUC6B https://www.aptrank.com/apt_detail.php?aptnameuid=12352,한 번지에 1·2차. 1차 376 + 2차 494 = 870 (아파트랭킹 합계),2026-10-14
+서구,광천동,896,호반써밋광주,246,,출처 1개,https://kbland.kr/se/c/33633,건축물대장에서 찾지 못함. 2019-12 사용승인 2개 동,2026-10-14
+북구,동림동,153-6,유일가든,365,,출처 1개,https://namu.wiki/w/%EB%8F%99%EB%A6%BC%EB%8F%99(%EA%B4%91%EC%A3%BC%EA%B4%91%EC%97%AD%EC%8B%9C%20%EB%B6%81%EA%B5%AC),건축물대장에서 찾지 못함. 1992-03 입주,2026-10-14
+북구,일곡동,816-3,동아1,248,,출처 1개,https://kbland.kr/se/c/36719,한 번지에 1·2차. 2차는 찾지 못해 비워 둠,2026-10-14
+광산구,송정동,929-9,중앙센트럴시티,43,,출처 1개,네이버페이 부동산 단지정보,건축물대장에서 찾지 못함. 2018-11 사용승인 1개 동. 디스코 66에서 고침,2026-10-15
+북구,오치동,856-7,명진명가,96,,출처 1개,아파트미 (구글 검색 요약),건축물대장 이름은 명진티엔씨. 2014 준공 도시형생활주택 1개 동. 호갱노노 11에서 고침,2026-10-15
+북구,문흥동,971-1,현대,282,yes,출처 2개+합계 일치,https://www.aptrank.com/apt_detail.php?aptnameuid=12676 https://kbland.kr/se/c/36675,건축물대장 643은 971-1 전체(1·2차) 값. 1차 282 + 2차 360 = 642 (KB 단지 전체 642). 목산 확인,2026-10-14
+북구,문흥동,971-1,현대2,360,,출처 1개+합계 일치,https://kbland.kr/se/c/36675,1차 282 + 2차 360 = 642 (KB 단지 전체 642). 목산 확인,2026-10-14
+북구,일곡동,816-3,동아2,332,,출처 1개+합계 일치,https://www.neonet.co.kr/novo-rebank/view/danjibank/DanjiBankHome.neo?apt_cd=A0005042 https://kbland.kr/se/c/36699,부동산뱅크 동아2차 332가구(2000-06 입주). 1차 248 + 2차 332 = 580 (KB 단지 전체 580),2026-10-15
+북구,신안동,125-1,부강아트빌,90,,출처 1개,네이버페이 부동산 단지정보,건축물대장에서 찾지 못함. 2002-07 사용승인 1개 동 (주상복합),2026-10-15

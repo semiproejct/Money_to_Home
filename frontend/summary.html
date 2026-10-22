@@ -1,0 +1,74 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <!-- 늘 밝은 화면으로 (2026-10-20). 휴대폰 브라우저의 "웹 페이지 어둡게"가 우리 색을 뒤집지 않게 한다 -->
+  <meta name="color-scheme" content="only light">
+  <title>입력 요약 · 머니 to 홈</title>
+  <link rel="stylesheet" href="css/common.css?v=20261021-2">
+  <link rel="stylesheet" href="css/summary.css?v=20261014-1">
+</head>
+<body>
+  <!-- P-04 ⑤ 입력 요약 (3차, T-PROFILE-09). Figma "확정 목업 v3"의 P-04 ⑤. 저축 계획 뒤, 지도 앞에 한 번 나온다.
+       값은 이 탭에 보관한 입력이고, 상품명과 금액은 서버가 계산한다 (A-01, A-03, A-04). 담당: 김해원 -->
+  <!-- 웹(가로 1200px 이상)에서만 왼쪽 위에 보이는 로고. 안은 js/layout.js가 그린다. 모바일에는 없다. -->
+  <header class="header" id="header"></header>
+  <div class="top-space"></div>
+
+  <nav class="progress" aria-label="입력 단계">
+    <a class="progress__back" href="plan.html" aria-label="이전 화면">‹</a>
+    <div class="progress__bars" aria-hidden="true">
+      <span class="progress__bar progress__bar--done"></span>
+      <span class="progress__bar progress__bar--done"></span>
+      <span class="progress__bar progress__bar--done"></span>
+      <span class="progress__bar"></span>
+    </div>
+    <span class="progress__label">3/4 저축 계획</span>
+  </nav>
+
+  <div class="form-page">
+    <main class="page">
+      <header class="form-page__head">
+        <h1 class="title" id="summary-title">이 내용으로 찾아볼까요?</h1>
+      </header>
+
+      <section class="summary-card" aria-labelledby="summary-finance">
+        <div class="summary-card__head">
+          <h2 class="summary-card__title" id="summary-finance">재무정보</h2>
+          <a class="summary-card__edit" href="profile.html">수정</a>
+        </div>
+        <dl class="summary-card__rows" id="rows-finance"></dl>
+      </section>
+
+      <section class="summary-card" aria-labelledby="summary-loan">
+        <div class="summary-card__head">
+          <h2 class="summary-card__title" id="summary-loan">대출상품</h2>
+          <a class="summary-card__edit" href="loan.html">수정</a>
+        </div>
+        <dl class="summary-card__rows" id="rows-loan"></dl>
+      </section>
+
+      <section class="summary-card" aria-labelledby="summary-plan">
+        <div class="summary-card__head">
+          <h2 class="summary-card__title" id="summary-plan">저축 계획</h2>
+          <a class="summary-card__edit" href="plan.html">수정</a>
+        </div>
+        <dl class="summary-card__rows" id="rows-plan"></dl>
+      </section>
+    </main>
+
+    <div class="bottom-action">
+      <a class="button button--primary" id="summary-map" href="map.html">지도에서 보기</a>
+    </div>
+  </div>
+
+  <script src="js/api.js"></script>
+  <script src="js/store.js"></script>
+  <script src="js/format.js?v=20261019-2"></script>
+  <script src="js/guard.js"></script>
+  <script src="js/layout.js?v=20261019-1"></script>
+  <script src="js/summary.js?v=20261015-3"></script>
+  <script src="js/scrollbar.js?v=20261020-6"></script>
+</body>
+</html>

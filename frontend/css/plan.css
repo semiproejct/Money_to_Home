@@ -1,0 +1,130 @@
+/* P-04 저축 계획 화면에만 쓰는 모양. 입력란, 버튼, 진행 바, 한 번에 하나씩 묻는 틀(.form-page)은 common.css에 있다. */
+
+/* 목표 기간: 선택지 네 개를 한 줄에 나란히 둔다. */
+.term {
+  min-width: 0;
+  margin: 0;
+  padding: 0 0 22px;
+  border: 0;
+}
+
+.term .field__label {
+  padding: 0 0 10px;
+}
+
+/* 회색 띠 안에서 고른 칸만 흰색으로 떠오른다. 대출상품 화면의 상환 기간과 같은 모양이다 (2026-10-13에 정함. 시안 3번) */
+.term__options {
+  display: flex;
+  padding: 3px;
+  border-radius: var(--radius-card);
+  background: var(--color-bg-sub);
+}
+
+.term__option {
+  position: relative;
+  flex: 1;
+  cursor: pointer;
+}
+
+/* 동그란 단추는 숨기고 글자 상자를 누르게 한다. 키보드로는 그대로 고를 수 있다. */
+.term__option input {
+  position: absolute;
+  opacity: 0;
+  pointer-events: none;
+}
+
+.term__option span {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: var(--touch-size);
+  border-radius: 9px; /* 바깥 모서리(12px)에서 안쪽 여백(3px)을 뺀 값 */
+  color: var(--color-text-sub);
+  font-size: var(--text-item);
+  font-weight: var(--font-medium);
+}
+
+.term__option input:checked + span {
+  background: var(--color-bg);
+  box-shadow: 0 0 0 1px var(--color-line);
+  color: var(--color-primary);
+  font-weight: var(--font-bold);
+}
+
+.term__option input:focus-visible + span {
+  outline: 2px solid var(--color-primary);
+  outline-offset: -2px;
+}
+
+/* 결과 상자: 자기자금을 크게, 그 아래에 어떻게 나온 값인지 두 줄 */
+.result {
+  padding: 18px 16px;
+  border-radius: var(--radius-card);
+  background: var(--color-bg-sub);
+}
+
+.result__label {
+  margin: 0;
+  color: var(--color-text-sub);
+  font-size: var(--text-label);
+  font-weight: var(--font-medium);
+}
+
+.result__amount {
+  margin: 2px 0 0;
+  color: var(--color-primary);
+  font-size: var(--text-display);
+  font-weight: var(--font-bold);
+  line-height: 38px;
+}
+
+.result__rows {
+  margin: 10px 0 0;
+}
+
+.result__row {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 10px 0;
+  font-size: var(--text-label);
+  line-height: 22px;
+}
+
+.result__row + .result__row {
+  padding-bottom: 0;
+  border-top: 1px solid var(--color-line);
+}
+
+.result__row dt {
+  color: var(--color-text-sub);
+}
+
+.result__row dd {
+  margin: 0;
+  color: var(--color-text);
+  font-weight: var(--font-bold);
+  white-space: nowrap;
+}
+
+/* 계산식은 이름 옆에 둔다. 자리가 모자라면 식이 통째로 아래 줄로 내려간다. */
+.result__formula {
+  white-space: nowrap;
+}
+
+/* 결과 상자 아래의 작은 글씨 */
+.result-note {
+  margin: 10px 0 0;
+  color: var(--color-text-sub);
+  font-size: var(--text-help);
+  line-height: 19px;
+}
+
+/* 버튼이 꺼져 있는 이유. 버튼 바로 위에 둔다. */
+.bottom-action__hint {
+  margin: 0 0 10px;
+  color: var(--color-text-sub);
+  font-size: var(--text-help);
+  text-align: center;
+}

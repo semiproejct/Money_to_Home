@@ -1,0 +1,72 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <!-- 늘 밝은 화면으로 (2026-10-20). 휴대폰 브라우저의 "웹 페이지 어둡게"가 우리 색을 뒤집지 않게 한다 -->
+  <meta name="color-scheme" content="only light">
+  <title>아파트 보기 · 머니 to 홈</title>
+  <link rel="stylesheet" href="css/common.css?v=20261021-2">
+  <link rel="stylesheet" href="css/glossary.css?v=20261015-2">
+  <link rel="stylesheet" href="css/scenario.css?v=20261021-mp1">
+  <link rel="stylesheet" href="css/scenario-charts.css?v=20261019-2">
+  <link rel="stylesheet" href="css/share.css?v=20261020-90">
+  <link rel="stylesheet" href="css/share-page.css?v=20261019-3">
+</head>
+<body data-page="share">
+  <!-- 공유받은 아파트 (3차, FR-APT-18). 담당: 김목산
+       공유 링크(share.html?apt=623&area=59)로 들어온 사람이 보는 화면이다. 입력이 없어도 열린다.
+       아파트 정보: A-06 그대로. 시나리오: 입력이 있으면 내 조건으로 계산(A-07, 박채은의 scenario.js),
+       없으면 예시 값으로 그린 것을 흐리게 덮고 "내 조건 넣기"를 보여 준다. 링크에는 재무정보가 없다. -->
+  <div class="top-space"></div>
+
+  <main class="share-page" id="share-page">
+    <!-- 머리: 지도 화면의 아파트 창(새 스타일)과 같은 모양. 이름 · 구분 배지 · 공유, 그 아래 면적 칩과 ㎡/평 -->
+    <header class="share-page__head">
+      <div class="share-page__title-row">
+        <h1 class="share-page__name" id="share-name"></h1>
+        <span class="share-page__badge" id="share-badge" hidden></span>
+        <span class="share-page__actions" id="share-actions"></span>
+      </div>
+      <p class="share-page__place" id="share-place"></p>
+      <div class="share-page__area-row">
+        <div class="share-page__areas" id="share-areas" role="group" aria-label="면적"></div>
+        <div class="share-page__unit" role="group" aria-label="면적 단위">
+          <button type="button" class="share-page__unit-option" data-unit="m2" aria-pressed="true">㎡</button>
+          <button type="button" class="share-page__unit-option" data-unit="pyeong" aria-pressed="false">평</button>
+        </div>
+      </div>
+    </header>
+
+    <div class="share-page__tabs" role="tablist">
+      <button type="button" class="share-page__tab" role="tab" id="share-tab-info" aria-controls="share-info" aria-selected="true">아파트 정보</button>
+      <button type="button" class="share-page__tab" role="tab" id="share-tab-scenario" aria-controls="share-scenario-wrap" aria-selected="false">시나리오</button>
+      <span class="share-page__tab-bar" aria-hidden="true"></span>
+    </div>
+
+    <section class="share-page__panel" id="share-info" role="tabpanel" aria-labelledby="share-tab-info"></section>
+    <section class="share-page__panel" id="share-scenario-wrap" role="tabpanel" aria-labelledby="share-tab-scenario" hidden>
+      <div id="share-scenario"></div>
+    </section>
+
+    <div class="share-page__bottom" id="share-bottom"></div>
+  </main>
+
+  <div class="share-page__missing" id="share-missing" hidden>
+    <p class="share-page__missing-text">아파트를 찾을 수 없습니다.</p>
+    <a class="button button--primary" href="index.html">처음 화면으로</a>
+  </div>
+
+  <script src="js/api.js?v=20261015-2"></script>
+  <script src="js/store.js?v=20261015-2"></script>
+  <script src="js/format.js?v=20261019-2"></script>
+  <script src="js/guard.js?v=20261015-2"></script>
+  <script src="js/layout.js?v=20261015-2"></script>
+  <script src="js/glossary.js?v=20261015-2"></script>
+  <script src="js/scenario.js?v=20261021-mp1"></script>
+  <script src="js/scenario-charts.js?v=20261019-7"></script>
+  <script src="js/share.js?v=20261019-2"></script>
+  <script src="js/share-page.js?v=20261020-1"></script>
+  <script src="js/scrollbar.js?v=20261020-6"></script>
+</body>
+</html>

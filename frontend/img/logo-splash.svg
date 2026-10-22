@@ -1,0 +1,9 @@
+<svg width="148" height="148" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
+<!-- 머니 to 홈 로고 (쌓이는 동전). 스플래시용으로 바탕 없이 둔다. 파란 바탕은 index.css의 .splash가 칠한다. -->
+<g fill="#FFC23D">
+<rect x="26" y="73" width="14" height="7" rx="3.5"/><rect x="26" y="64" width="14" height="7" rx="3.5"/>
+<rect x="43" y="73" width="14" height="7" rx="3.5"/><rect x="43" y="64" width="14" height="7" rx="3.5"/><rect x="43" y="55" width="14" height="7" rx="3.5"/>
+<rect x="60" y="73" width="14" height="7" rx="3.5"/><rect x="60" y="64" width="14" height="7" rx="3.5"/><rect x="60" y="55" width="14" height="7" rx="3.5"/><rect x="60" y="46" width="14" height="7" rx="3.5"/>
+</g>
+<polyline points="16,46 50,18 84,46" fill="none" stroke="#FFFFFF" stroke-width="6.5" stroke-linecap="round" stroke-linejoin="round"/>
+</svg>

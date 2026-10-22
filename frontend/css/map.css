@@ -1,0 +1,1596 @@
+/* P-05 지도 화면에만 쓰는 모양. 공통 부품과 색은 common.css에 있다. 담당: 안세환
+
+   기준: Figma "확정 목업 v3"의 "v3 · P-05 ① 지도 기본" (node 2037:3), 390 × 844.
+   위치는 목업의 값을 지도 영역(내 조건 줄 아래, 390 × 804) 기준으로 옮겼다.
+
+   common.css에 아직 없는 값이 하나 있다. 팀장에게 :root에 더해 달라고 부탁할 것.
+     --color-info:          #2093ff   안내 아이콘 ( ! )
+   더해지기 전까지는 var()의 둘째 값(목업의 값)으로 그려진다. 더해지면 그 값을 따른다. */
+
+.map-body {
+  /* 그림자. 목업의 값이다. 다른 화면에서도 쓰게 되면 common.css로 옮긴다. */
+  --shadow-float: 0 2px 8px rgba(0, 0, 0, 0.14); /* 검색 줄 */
+  --shadow-chip: 0 2px 6px rgba(0, 0, 0, 0.12); /* 조건 칩 */
+  --shadow-control: 0 2px 8px rgba(0, 0, 0, 0.16); /* 지도 버튼, 범례 */
+  --shadow-strong: 0 4px 12px rgba(0, 0, 0, 0.3); /* 목록 보기 */
+  --shadow-marker: 0 2px 6px rgba(0, 0, 0, 0.22); /* 말풍선 B */
+  --color-dong: #7d5fd3; /* 넓게 볼 때의 동 표시. 연보라. 구를 알면 아래 구 색을 쓴다 */
+  /* 구마다 색 (2026-10-20 팀장 결정). 구 · 동 표시가 쓴다.
+     고른 구 · 동의 경계와 동 이름표는 예전 연보라(--boundary-picked) 그대로 둔다 (구 색까지 쓰면 산만해서, 2026-10-20 팀장 결정) */
+  --gu-gwangsan: #5b8fc9; /* 광산구 */
+  --gu-buk: #e98243; /* 북구 */
+  --gu-seo: #369ba5; /* 서구 */
+  --gu-dong: #e56670; /* 동구 */
+  --gu-nam: #ad8968; /* 남구 */
+
+  /* 광주 5개 구 경계 (P-05 ⑪, FR-MAP-28). js/boundary.js가 읽어 카카오맵의 선과 면에 쓴다. 굵기와 불투명도는 boundary.js에 있다.
+     경계는 지도를 이해시키는 보조 선이라 말풍선보다 눈에 띄지 않게 회색으로 두고, 고른 지역만 동 표시와 같은 연보라로 칠한다. */
+  --boundary-gu: #5b6b8c; /* 구 경계. 남색 회색 (2026-10-20 팀장) */
+  --boundary-dong: var(--color-line-strong); /* 행정동 경계. 연한 회색, 가까이 볼 때만 */
+  --boundary-picked: var(--color-dong); /* 고른 구·동의 선과 반투명 칠 */
+  --boundary-mask: var(--color-dim); /* 경계 밖을 덮는 반투명 면 */
+  --boundary-outline: #cdcac5; /* 광주 바깥 테두리. 지도 바탕(#f4f1ec쯤)에 덮개(검정 16%)를 얹은 색 (2026-10-20) */
+
+  /* 말풍선의 꼬리 끝(아파트의 자리)이 말풍선 왼쪽 위에서 떨어진 거리.
+     꼬리(15 × 10)는 왼쪽에서 1px, 위에서 47px에 있고 끝은 그 가운데 아래다. */
+  --marker-tip-x: 8.5px;
+  --marker-tip-y: 57px;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 100vh;
+  height: 100dvh;
+  overflow: hidden;
+  background: var(--color-bg-sub);
+}
+
+/* 모바일 화면의 틀 (1023px 이하). 창을 가득 채운다 (2026-10-20 팀장 결정).
+   휴대폰에서는 화면 그대로, 태블릿이나 줄인 PC 창에서는 창이 커지는 만큼 같이 커진다.
+   예전에는 431px 이상에서 목업 크기(390 × 844) 카드로 가운데에 고정했다.
+   1024px 이상은 웹 배치(css/map-web.css)로 바뀐다 */
+.map-app {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  background: var(--color-bg);
+}
+
+/* ───────── 내 조건 줄 ───────── */
+.condition-bar {
+  display: flex;
+  flex-shrink: 0;
+  align-items: center;
+  gap: 6px;
+  height: var(--condition-bar-height);
+  padding: 0 4px 0 16px;
+  background: var(--color-primary-soft);
+  font-size: var(--text-help);
+  line-height: var(--line-height);
+}
+
+.condition-bar__text {
+  display: flex;
+  flex: 1;
+  align-items: center;
+  gap: 6px;
+  min-width: 0;
+  margin: 0;
+  white-space: nowrap;
+}
+
+.condition-bar__label {
+  flex-shrink: 0;
+  color: var(--color-primary);
+  font-weight: var(--font-bold);
+}
+
+.condition-bar__sentence {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  color: var(--color-text);
+  font-weight: var(--font-medium);
+  text-overflow: ellipsis;
+}
+
+.condition-bar__actions {
+  display: flex;
+  flex-shrink: 0;
+}
+
+.condition-bar__link {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 40px;
+  height: var(--condition-bar-height);
+  padding: 0 8px;
+  color: var(--color-primary);
+  font-weight: var(--font-bold);
+  text-decoration: none;
+  white-space: nowrap;
+}
+
+.condition-bar__link--edit {
+  text-decoration: underline;
+}
+
+/* ───────── 지도 영역 ───────── */
+.map-area {
+  position: relative;
+  flex: 1;
+  overflow: hidden;
+}
+
+.map {
+  position: absolute;
+  inset: 0;
+  z-index: 0; /* 카카오맵 안의 z-index가 이 상자 밖으로 새지 않게 쌓임 맥락을 만든다. 검색 줄과 버튼이 지도 위에 보인다 */
+  isolation: isolate;
+  background: var(--color-map);
+}
+
+/* 카카오맵이 그려지는 곳 */
+.map__kakao {
+  position: absolute;
+  inset: 0;
+}
+
+/* 불러오는 중, 불러오지 못함. 지도가 뜨면 숨긴다. */
+.map__message {
+  position: absolute;
+  top: 50%;
+  right: 24px;
+  left: 24px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  transform: translateY(-50%);
+  text-align: center;
+}
+
+.map__message[hidden] {
+  display: none;
+}
+
+.map__message-text {
+  margin: 0;
+  color: var(--color-text-sub);
+  font-size: var(--text-help);
+  line-height: 20px;
+}
+
+/* ───────── 조건 칩 아래 검은 알림 ───────── */
+.map-toast {
+  position: absolute;
+  top: 89px;
+  right: 12px;
+  left: 12px;
+  z-index: 2;
+  margin: 0;
+  padding: 10px 14px;
+  border-radius: var(--radius-card);
+  background: var(--color-text);
+  box-shadow: var(--shadow-control);
+  color: var(--color-on-primary);
+  font-size: var(--text-help);
+  line-height: 19px;
+}
+
+.map-toast[hidden] {
+  display: none;
+}
+
+/* ───────── 아파트 표시 (말풍선, 모양 B) ─────────
+   Figma "v3 · P-05 ① 지도 기본 · 말풍선 B" (2038:98), 부품 "말풍선 (아파트 표시)"의 모양=B 단색 (2034:39, 47, 55).
+   72 × 57. 몸통(72 × 49, 모서리 10, 왼쪽 아래만 2)과 꼬리가 한 덩어리다. 꼬리 끝(8.5, 57)이 아파트의 자리다.
+   모양은 Figma의 벡터 경로를 그대로 옮긴 SVG다 (map-view.js의 MARKER_PATH). 흰 테두리 1.5px, 그림자 0 2px 6px.
+   글자: 면적 11px Medium(위 7px), 실거래 평균가 16px Bold(위 22px), 둘 다 흰색.
+   카카오맵 CustomOverlay가 말풍선의 왼쪽 위를 아파트의 자리에 두고, transform으로 꼬리 끝을 그 자리에 맞춘다. */
+.marker {
+  position: absolute;
+  width: 72px;
+  height: 57px;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: var(--marker-color); /* 글자는 구분색 (말풍선 시안 7, 2026-10-15) */
+  font-family: inherit;
+  cursor: pointer;
+  transform: translate(calc(var(--marker-tip-x) * -1), calc(var(--marker-tip-y) * -1));
+  transform-origin: var(--marker-tip-x) var(--marker-tip-y);
+  transition: transform 0.15s ease;
+}
+
+/* 넓게 볼 때의 동 표시 (P-05 ③). 동그라미 안에 동 이름과 큰 숫자. 가운데가 그 동의 자리다.
+   바탕은 연보라를 조금 비치게 칠한다 (2026-10-13에 정함). 글자는 흰색이다. */
+.dong-marker {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  width: 68px;
+  height: 68px;
+  padding: 0;
+  border: 1px solid var(--color-dong);
+  border-radius: 50%;
+  background: color-mix(in srgb, var(--color-dong) 78%, transparent);
+  color: var(--color-on-primary);
+  font-family: inherit;
+  white-space: nowrap;
+  cursor: pointer;
+}
+
+.dong-marker__name {
+  max-width: 60px;
+  overflow: hidden;
+  font-size: var(--text-badge);
+  font-weight: var(--font-medium);
+  line-height: 16px;
+  text-overflow: ellipsis;
+}
+
+.dong-marker__count {
+  font-size: var(--text-amount);
+  font-weight: var(--font-bold);
+  line-height: 24px;
+}
+
+/* 더 넓게 볼 때의 구 표시 (P-05 ⑪). 동 표시와 같은 모양이고 조금 크다. */
+.dong-marker--gu {
+  width: 70px;
+  height: 70px;
+}
+
+.dong-marker--gu .dong-marker__name {
+  max-width: 74px;
+  font-size: var(--text-help);
+  line-height: 18px;
+}
+
+.dong-marker--gu .dong-marker__count {
+  font-size: var(--text-value);
+  line-height: 28px;
+}
+
+/* 구마다 색 (2026-10-20 팀장 결정). 구 표시와 동 표시 모두 그 구의 색이다.
+   바탕 · 테두리는 위의 --color-dong을 쓰므로 색만 바꾼다. 글씨는 흰색 그대로 (map-view.js가 data-gu를 단다) */
+.dong-marker[data-gu="광산구"] { --color-dong: var(--gu-gwangsan); }
+.dong-marker[data-gu="북구"] { --color-dong: var(--gu-buk); }
+.dong-marker[data-gu="서구"] { --color-dong: var(--gu-seo); }
+.dong-marker[data-gu="동구"] { --color-dong: var(--gu-dong); }
+.dong-marker[data-gu="남구"] { --color-dong: var(--gu-nam); }
+
+/* 구 표시는 동 표시(78%)보다 진하게 (2026-10-20 팀장 결정). 목표할 곳이 없는 구(.dong-marker--empty)는 그대로 옅게 */
+.dong-marker--gu:not(.dong-marker--empty) {
+  background: color-mix(in srgb, var(--color-dong) 92%, transparent);
+}
+
+/* 목표할 수 있는 곳이 없는 동은 점선 테두리에 더 옅은 바탕 */
+.dong-marker--empty {
+  border-style: dashed;
+  background: color-mix(in srgb, var(--color-dong) 28%, transparent);
+  color: var(--color-dong);
+}
+
+/* 고른 동의 아파트 수 (P-05 ⑪). 지금은 쓰지 않는다. 다시 쓰려고 남겨 둔다 (map-view.js의 renderFocusLabel). 동 경계의 위쪽 가운데에 붙는 연보라 알약. 동 표시와 같은 색이다.
+   누를 수 없다. 밑의 지도를 끌 수 있게 마우스를 받지 않는다. */
+.dong-label {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-bottom: 6px;
+  padding: 4px 12px;
+  border-radius: var(--radius-pill);
+  background: var(--color-dong);
+  color: var(--color-on-primary);
+  white-space: nowrap;
+  pointer-events: none;
+}
+
+.dong-label__name {
+  font-size: var(--text-help);
+  font-weight: var(--font-bold);
+  line-height: 20px;
+}
+
+.dong-label__count {
+  font-size: var(--text-badge);
+  font-weight: var(--font-medium);
+  line-height: 18px;
+}
+
+/* 이 말풍선 뒤에 겹쳐 가려진 아파트의 수. "+3". 말풍선의 오른쪽 위에 붙는다. */
+.marker__more {
+  position: absolute;
+  top: -8px;
+  right: -8px;
+  min-width: 22px;
+  height: 22px;
+  padding: 0 5px;
+  border: 1px solid var(--color-line-strong);
+  border-radius: var(--radius-pill);
+  background: var(--color-bg);
+  color: var(--color-text);
+  font-size: var(--text-badge);
+  font-weight: var(--font-bold);
+  line-height: 20px;
+  text-align: center;
+}
+
+/* 누른 표시는 1.2배 (화면 설계서 6.1) */
+/* 고른 말풍선은 구분색 바탕에 흰 글자로 뒤집어 눈에 띄게 한다 */
+.marker--selected {
+  color: var(--color-on-primary);
+}
+
+.marker--selected .marker__shape path {
+  fill: var(--marker-color);
+  stroke: var(--color-on-primary);
+}
+
+.marker--selected {
+  z-index: 1;
+  transform: translate(calc(var(--marker-tip-x) * -1), calc(var(--marker-tip-y) * -1)) scale(1.2);
+}
+
+.marker__shape {
+  position: absolute;
+  top: 0;
+  left: 0;
+  overflow: visible; /* 흰 테두리와 그림자가 72 × 57 밖으로 나온다 */
+  filter: drop-shadow(var(--shadow-marker));
+}
+
+.marker__shape path {
+  fill: var(--color-bg); /* 흰 바탕에 구분색 테두리 (시안 7). 전에는 구분색 바탕에 흰 테두리 */
+  stroke: var(--marker-stroke, var(--marker-color));
+  stroke-width: 1.5;
+  stroke-linejoin: round;
+}
+
+.marker__area,
+.marker__price {
+  position: absolute;
+  left: 0;
+  width: 72px;
+  text-align: center;
+  white-space: nowrap;
+}
+
+.marker__area {
+  top: 7px;
+  font-size: 11px;
+  font-weight: var(--font-medium);
+  line-height: 15px;
+}
+
+.marker__price {
+  top: 22px;
+  font-size: var(--text-item);
+  font-weight: var(--font-bold);
+  line-height: 20px;
+}
+
+/* 구분별 바탕색. Figma의 color/now-text, color/lime/within-text, color/lime/lack-text */
+.marker--now {
+  --marker-color: var(--color-now-text);
+}
+
+.marker--within {
+  --marker-color: var(--color-within-text);
+  --marker-stroke: var(--color-within); /* 테두리는 조금 밝은 구분색 */
+}
+
+.marker--lack {
+  --marker-color: var(--color-lack-text);
+  --marker-stroke: var(--color-lack); /* 테두리는 조금 밝은 구분색 */
+}
+
+/* 자금 부족 표시를 끄면 자금 부족 말풍선을 숨긴다 */
+.map--hide-lack .marker--lack {
+  display: none;
+}
+
+/* 내 위치 (2차). 위치는 저장하지 않고 서버로 보내지 않는다 (NFR-23). */
+.my-location {
+  position: absolute;
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  /* 목업: 바깥 28px 파란 고리, 흰 틈, 가운데 14px 파란 점. 임시 모양이다 (Figma 2037:48, 2037:49) */
+  background: radial-gradient(circle, var(--color-primary) 0 7px, var(--color-bg) 7px 10.5px, var(--color-primary) 10.5px);
+  transform: translate(-50%, -50%);
+  pointer-events: none;
+}
+
+/* ───────── 검색 줄 ───────── */
+.search-row {
+  position: absolute;
+  top: 9px;
+  right: 12px;
+  left: 12px;
+  display: flex;
+  gap: 8px;
+  height: 32px;
+}
+
+.region-button {
+  display: flex;
+  flex-shrink: 0;
+  align-items: center;
+  gap: 6px;
+  max-width: 45%; /* 줄의 45%를 넘으면 끝을 말줄임 (화면 설계서 6.1) */
+  height: 32px;
+  padding: 0 12px 0 14px;
+  border: 0;
+  border-radius: var(--radius-card);
+  background: var(--color-bg);
+  box-shadow: var(--shadow-float);
+  color: var(--color-text);
+  font-family: inherit;
+  cursor: pointer;
+}
+
+.region-button__name {
+  overflow: hidden;
+  font-size: var(--text-body);
+  font-weight: var(--font-bold);
+  line-height: var(--line-height);
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.region-button__arrow {
+  flex-shrink: 0;
+  color: var(--color-text-sub);
+  font-size: 11px;
+}
+
+.search-box {
+  display: flex;
+  flex: 1;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+  height: 32px;
+  padding: 0 14px;
+  border-radius: var(--radius-card);
+  background: var(--color-bg);
+  box-shadow: var(--shadow-float);
+  color: var(--color-text-sub);
+}
+
+.search-box__icon {
+  flex-shrink: 0;
+}
+
+.search-box__input {
+  flex: 1;
+  min-width: 0;
+  height: 100%;
+  padding: 0;
+  border: 0;
+  outline: 0;
+  background: transparent;
+  color: var(--color-text);
+  font-family: inherit;
+  font-size: var(--text-body);
+}
+
+.search-box__input::placeholder {
+  color: var(--color-text-hint);
+}
+
+/* ───────── 조건 칩 줄 ───────── */
+.chip-row {
+  position: absolute;
+  top: 49px;
+  right: 0;
+  left: 0;
+  display: flex;
+  gap: 6px;
+  padding: 0 12px 8px; /* 아래 8px은 칩 그림자가 잘리지 않게 */
+  overflow-x: auto; /* 넣은 조건이 많으면 옆으로 민다 */
+  scrollbar-width: none;
+  pointer-events: none; /* 칩 사이 빈 곳은 지도를 누른 것으로 */
+}
+
+.chip-row::-webkit-scrollbar {
+  display: none;
+}
+
+.chip-row > *,
+.chip-row__tags {
+  flex: none;
+  pointer-events: auto;
+}
+
+.chip-row__tags {
+  display: flex;
+  gap: 6px;
+}
+
+.chip-row__tags:empty {
+  display: none;
+}
+
+.filter-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  height: 30px;
+  padding: 0 13px;
+  border: 1px solid var(--color-line);
+  border-radius: var(--radius-pill);
+  background: var(--color-bg);
+  box-shadow: var(--shadow-chip);
+  color: var(--color-text);
+  font-family: inherit;
+  font-size: var(--text-badge);
+  font-weight: var(--font-medium);
+  line-height: var(--line-height);
+  white-space: nowrap;
+  cursor: pointer;
+}
+
+/* 조건이 걸린 칩. "면적 59~84㎡ ▾" */
+.filter-chip--on {
+  border-color: var(--color-primary);
+  background: var(--color-primary-soft);
+  color: var(--color-now-text);
+}
+
+/* 넣은 조건 칩. 글자(누르면 조건 창)와 ✕(누르면 그 조건만 풂) 두 버튼 */
+.filter-tag {
+  gap: 0;
+  padding: 0;
+}
+
+.filter-tag__text,
+.filter-tag__remove {
+  height: 100%;
+  border: 0;
+  background: none;
+  color: inherit;
+  font: inherit;
+  cursor: pointer;
+}
+
+.filter-tag__text {
+  padding: 0 4px 0 13px;
+}
+
+.filter-tag__remove {
+  padding: 0 11px 0 4px;
+  font-size: var(--text-badge);
+}
+
+/* ───────── 오른쪽 아래 버튼 ───────── */
+.map-controls {
+  position: absolute;
+  right: 12px;
+  bottom: 76px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.map-button {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  width: var(--touch-size);
+  height: var(--touch-size);
+  padding: 0;
+  border: 0;
+  border-radius: var(--radius-card);
+  background: var(--color-bg);
+  box-shadow: var(--shadow-control);
+  color: var(--color-text);
+  font-family: inherit;
+  font-size: var(--text-amount);
+  line-height: var(--line-height);
+  cursor: pointer;
+}
+
+.map-button__main {
+  font-size: var(--text-body);
+  font-weight: var(--font-bold);
+  line-height: 18px;
+}
+
+.map-button__sub {
+  color: var(--color-text-sub);
+  font-size: 10px;
+  font-weight: var(--font-medium);
+  line-height: 12px;
+}
+
+.map-button--locate {
+  color: var(--color-primary);
+}
+
+/* 확대와 축소는 한 덩어리. 사이에 선 */
+.zoom-buttons {
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  border-radius: var(--radius-card);
+  box-shadow: var(--shadow-control);
+}
+
+.zoom-buttons .map-button {
+  border-radius: 0;
+  box-shadow: none;
+}
+
+.zoom-buttons .map-button + .map-button {
+  border-top: 1px solid var(--color-line);
+}
+
+/* ───────── 범례 ───────── */
+.legend {
+  position: absolute;
+  bottom: 32px; /* 목업은 16px. 카카오 로고(지도 왼쪽 아래)를 가리지 않게 16px 올렸다. 로고는 이용 약관상 가리지 않는다 */
+  left: 12px;
+  min-width: 118px;
+  padding: 10px 12px 12px;
+  border-radius: var(--radius-card);
+  background: var(--color-bg);
+  box-shadow: var(--shadow-control);
+}
+
+.legend__head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: var(--color-text);
+  font-family: inherit;
+  cursor: pointer;
+}
+
+.legend__title {
+  font-size: var(--text-help);
+  font-weight: var(--font-bold);
+  line-height: 19px;
+}
+
+.legend__arrow {
+  color: var(--color-text-sub);
+  font-size: 10px;
+  line-height: 15px;
+  transition: transform 0.15s ease;
+}
+
+.legend__head[aria-expanded="false"] .legend__arrow {
+  transform: rotate(180deg);
+}
+
+.legend__list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin: 8px 0 0;
+  padding: 0;
+  list-style: none;
+}
+
+.legend__list[hidden] {
+  display: none;
+}
+
+.legend__item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: var(--text-badge);
+  font-weight: var(--font-medium);
+  line-height: 17px;
+  white-space: nowrap;
+}
+
+.legend__swatch {
+  flex-shrink: 0;
+  width: 18px;
+  height: 13px;
+  border-radius: 4px;
+}
+
+.legend__swatch--now {
+  background: var(--color-now-text);
+}
+
+.legend__swatch--within {
+  background: var(--color-within-text);
+}
+
+.legend__swatch--lack {
+  background: var(--color-lack-text);
+}
+
+/* ───────── 안내 아이콘 ( ! ) ───────── */
+.info-tip {
+  position: absolute;
+  bottom: 16px;
+  left: 138px;
+}
+
+.info-tip__button {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 22px;
+  height: 22px;
+  padding: 0;
+  border: 0;
+  border-radius: 50%;
+  background: var(--color-info, #2093ff);
+  color: var(--color-on-primary);
+  font-family: inherit;
+  font-size: var(--text-help);
+  font-weight: var(--font-bold);
+  line-height: 16px;
+  cursor: pointer;
+}
+
+/* 누르는 영역은 44픽셀 이상 (NFR-24). 보이는 크기는 22로 두고 둘레를 넓힌다. */
+.info-tip__button::after {
+  content: '';
+  position: absolute;
+  inset: -11px;
+}
+
+/* 안내 말풍선. 와이어프레임 B5의 검은 말풍선 */
+.info-tip__text {
+  position: absolute;
+  bottom: 32px;
+  left: -109px; /* 말풍선의 가운데를 아이콘의 가운데(11px)에 맞춘다 */
+  width: 240px;
+  margin: 0;
+  padding: 10px 12px;
+  border-radius: var(--radius-card);
+  background: var(--color-text);
+  color: var(--color-on-primary);
+  font-size: var(--text-badge);
+  line-height: 18px;
+}
+
+/* ───────── 축척 ───────── */
+.map-scale {
+  position: absolute;
+  bottom: 27px;
+  left: calc(50% + 12px);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+}
+
+.map-scale__label {
+  font-size: 11px;
+  font-weight: var(--font-medium);
+  line-height: var(--line-height);
+}
+
+.map-scale__bar {
+  width: 64px;
+  height: 3px;
+  border-radius: 1px;
+  background: var(--color-text);
+}
+
+/* ───────── 목록 보기 ───────── */
+.list-button {
+  position: absolute;
+  right: 10px;
+  bottom: 17px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 6px;
+  /* (예전) 목업의 크기 98 × 36 (왼쪽 282, 아래 17). 아이콘과 글자를 묶어 버튼의 가운데에 둔다.
+     여백을 따로 주지 않는다. 주면 버튼이 넓어져 축척과 붙어 버린다. */
+  width: auto; /* 햄버거 아이콘과 "목록" 두 글자만큼 */
+  height: 32px;
+  padding: 0 12px;
+  border: 0;
+  border-radius: var(--radius-card);
+  background: var(--color-primary);
+  box-shadow: var(--shadow-strong);
+  color: var(--color-on-primary);
+  font-family: inherit;
+  font-size: var(--text-help);
+  font-weight: var(--font-bold);
+  line-height: var(--line-height);
+  white-space: nowrap;
+  cursor: pointer;
+}
+
+.list-button__icon {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+
+.list-button__icon span {
+  width: 14px;
+  height: 2px;
+  border-radius: 1px;
+  background: var(--color-on-primary);
+}
+
+/* 광주 5개 구 경계 (js/boundary.js). 카카오맵은 선과 면을 지도 위의 SVG 한 장에 그린다.
+   경계 밖 덮개가 아주 넓어서 그 SVG가 지도 전체를 덮는다. 경계는 누를 것이 없으므로 누르기와 끌기가 지도로 가게 한다.
+   (말풍선 안의 SVG(.marker__shape)는 버튼의 일부라 그대로 둔다) */
+#kakao-map svg:not(.marker__shape),
+#kakao-map svg:not(.marker__shape) * {
+  pointer-events: none !important;
+}
+
+/* ───────── 지도 위 주변 시설 (map-view.js의 showFacilityOnMap) ─────────
+   축척 100m 이하에서 화면 안 아파트들의 주변 시설(A-06 좌표)이 뜨고, 정보 탭의 시설 줄을 누른 시설도 뜬다 (2026-10-20). 44px 누름 자리 가운데에 색 동그라미, 위에 이름표.
+   시설 종류의 색은 common.css에 없는 색이라 여기서만 쓰는 변수로 둔다. */
+.facility {
+  --facility-color: var(--color-primary);
+  --facility-icon: var(--color-on-primary);
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: var(--touch-size);
+  height: var(--touch-size);
+  padding: 0;
+  border: 0;
+  background: transparent;
+  font-family: inherit;
+  cursor: pointer;
+}
+
+/* 카카오 지도 바탕의 시설 아이콘과 같은 색과 모양 (2026-10-19 세환 결정). 바탕 아이콘(지름 약 16px)보다 크게 그 자리에 덮는다.
+   바탕 아이콘은 지도 그림(타일)의 일부라 지울 수 없다. 크기는 1.4배, 흰 테두리 없이 (2026-10-20 세환, 1.5배 → 1.4배).
+   색은 카카오 지도 화면에서 뽑은 값이다: 학교 파랑, 마트 주황, 병원 진분홍, 지하철은 광주 1호선 초록 둥근 네모.
+   편의점만 마트와 나눠 보이게 노랑으로 바꿨다 (2026-10-19 세환, 색 시안 10번).
+   다섯 색 모두 채도를 10%p 낮췄다 (2026-10-20 세환. 지하철 #009088, 학교 #4a8bd6, 마트 #f5a02a, 편의점 #e9b114, 병원 #d9485c에서) */
+.facility--sw8 { --facility-color: #078982; }
+.facility--sc4 { --facility-color: #558ccb; }
+.facility--mt1 { --facility-color: #ea9e35; }
+.facility--cs2 { --facility-color: #ffc832; }
+.facility--hp8 { --facility-color: #ce5364; }
+/* 버스정류장 (2026-10-20 세환): 카카오 지도 바탕의 버스정류장 아이콘과 같은 파랑, 둥근 네모. 지도 화면에서 뽑은 값이다 */
+.facility--bus { --facility-color: #0936a8; } /* 남색 (2026-10-20 시안 2). 카카오의 파란 정류장 아이콘, 지하철(청록)과 구별되게. 초록은 지하철과 겹쳐 보였고 검정은 너무 무거웠다 */
+
+.facility__dot {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-sizing: border-box;
+  width: 22px; /* 바탕 아이콘 16px의 1.4배 */
+  height: 22px;
+  border-radius: 50%;
+  background: var(--facility-color);
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.25);
+}
+
+.facility--sw8 .facility__dot {
+  border-radius: 6px; /* 카카오 지도의 지하철역처럼 둥근 네모 */
+}
+
+.facility__icon {
+  width: 14px;
+  height: 14px;
+  fill: var(--facility-icon);
+}
+
+/* 편의점 그림의 "24" */
+.facility__glyph-text {
+  fill: var(--facility-color);
+  font-family: inherit;
+  font-size: 8px;
+  font-weight: 800;
+  letter-spacing: -0.5px;
+}
+
+/* 이름표: 말풍선 모양 (2026-10-19 세환이 고른 시안 5). 첫 줄 이름, 둘째 줄 거리(시설 색). 아래 꼬리가 아이콘을 가리킨다.
+   화면 가장자리에서 안쪽으로 밀리면(keepFacilityNameInside) 꼬리는 --tail-shift만큼 거꾸로 옮겨 계속 아이콘을 가리킨다 */
+.facility__name {
+  --tail-shift: 0px;
+  position: absolute;
+  bottom: calc(100% - 4px);
+  left: 50%;
+  display: none;
+  padding: 5px 11px;
+  border-radius: 10px;
+  background: var(--color-bg);
+  color: var(--color-text);
+  font-size: var(--text-help);
+  font-weight: var(--font-bold);
+  line-height: 1.35;
+  text-align: center;
+  white-space: nowrap;
+  transform: translateX(-50%);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
+}
+
+.facility__name::after {
+  position: absolute;
+  bottom: -6px;
+  left: calc(50% + var(--tail-shift));
+  margin-left: -6px;
+  border: 6px solid transparent;
+  border-top-color: var(--color-bg);
+  border-bottom: 0;
+  content: '';
+}
+
+.facility[aria-expanded='true'] .facility__name {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.facility[aria-expanded='true'] .facility__dot {
+  transform: scale(1.15);
+}
+
+/* 고른 아파트 → 누른 시설의 점선 (map-view.js의 drawFacilityLink)
+   아파트 자리에 단 0×0 상자에서 SVG 선이 시설까지 뻗는다. 처음 한 번은 점선이 뻗어 가고(--grow),
+   그다음부터는 점선(투명도 없이 진하게) 위로 굵은 칸(__lead) 하나가 아파트에서 시설 쪽으로 한 칸씩 옮겨 간다. 칸 길이와 간격은 map-view.js가 정한다.
+   거리는 선 위가 아니라 시설 이름표의 이름 옆(.facility__distance)에 띄운다. */
+.facility-link {
+  position: relative;
+  width: 0;
+  height: 0;
+  pointer-events: none;
+}
+
+.facility-link__svg {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 1px;
+  height: 1px;
+  overflow: visible;
+}
+
+.facility-link__line,
+.facility-link__lead {
+  stroke: var(--facility-color);
+  stroke-linecap: round;
+  filter: drop-shadow(0 0 1px var(--color-bg));
+}
+
+.facility-link__line {
+  stroke-width: 4; /* 투명도 없이 진하게 (2026-10-19 세환) */
+  transition: stroke-width 0.3s ease;
+}
+
+/* 처음 한 번 뻗어 가는 동안: 굵은 점선만 보이고 굵은 칸은 숨긴다 (map-view.js의 drawFacilityLink) */
+.facility-link--grow .facility-link__line {
+  stroke-width: 5;
+}
+
+.facility-link--grow .facility-link__lead {
+  display: none;
+}
+
+.facility-link__lead {
+  stroke-width: 8;
+}
+
+
+/* 이름표 안의 거리. 시설 색 바탕의 작은 칩 */
+/* 둘째 줄: [걷는 사람] 약 5분 · 약 280m. 시간은 시설 색으로 굵게, 거리는 회색 (시안 5 + 7) */
+.facility__distance {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  color: var(--color-text-sub);
+  font-size: var(--text-badge);
+  font-weight: var(--font-medium);
+}
+
+.facility__walk-icon {
+  width: 12px;
+  height: 12px;
+  fill: var(--facility-color);
+}
+
+.facility__walk-time {
+  color: var(--facility-color);
+  font-weight: 800;
+}
+
+.facility__distance[hidden] {
+  display: none;
+}
+
+/* 점선이 닿았을 때 시설 아이콘이 한 번 커졌다 돌아온다 */
+.facility--arrived .facility__dot {
+  animation: facility-arrive 0.4s ease-out;
+}
+
+@keyframes facility-arrive {
+  50% {
+    transform: scale(1.4);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .facility--arrived .facility__dot {
+    animation: none;
+  }
+}
+
+/* ───────── 범례 + 시설 체크 칸 (map.html의 .facility-tab, map-view.js의 renderLegend · renderFacilityFilter) ─────────
+   모바일은 지도 왼쪽 아래, 카카오 로고 바로 위 (2026-10-20 세환. 범례를 왼쪽 위에서 내려 체크 칸과 합쳤다).
+   웹(1024px 이상)은 지도 왼쪽 위 (2026-10-20 세환). 단추가 위에 있고 상자는 단추 아래로 펼쳐진다.
+   동그란 위치 단추는 늘 같은 자리에 있고, 누르면 범례 · 체크 칸을 접고 편다 (처음에는 펼침, 접은 상태는 기억).
+   펼치면 반투명 흰 상자 하나가 범례, 체크 칸, 단추까지 감싼다. 단추는 모바일은 상자 안 왼쪽 아래(2026-10-20 세환이 그려 준 대로), 웹은 왼쪽 위.
+   상자 위: 말풍선 구분(지금 · 기간 내 · 부족)과 선택한 아파트. 글자와 집 모양은 new-style.css의 .legend__list · .legend__item을 그대로 쓴다.
+   상자 아래(옅은 선 밑): 시설 체크 칸. 축척과 상관없이 늘 보인다. 체크는 줄 오른쪽 끝. 줄마다 누르는 자리는 44px 높이다.
+   종류 그림은 지도 아이콘과 같은 모양과 색이다 (.facility--sw8 등의 --facility-color). */
+.facility-tab {
+  /* 바탕은 예전 범례 상자와 같은 반투명 흰색 (new-style.css .legend). common.css에 없는 값이라 여기서만 쓰는 변수로 둔다 */
+  --map-key-bg: rgba(255, 255, 255, 0.86);
+  --map-key-line: rgba(60, 60, 67, 0.18); /* 범례와 체크 칸 사이의 옅은 선 */
+  --map-key-pad: 6px; /* 펼쳤을 때 상자 안쪽 여백. 그만큼 상자를 바깥으로 넓혀 단추 자리가 바뀌지 않게 한다 */
+  --map-key-left: 10px;
+  position: absolute;
+  bottom: 22px; /* 단추가 카카오 로고(지도 왼쪽 아래) 바로 위. 로고는 이용 약관상 가리지 않는다 */
+  left: var(--map-key-left);
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+}
+
+/* 펼침: 상자 하나가 범례 · 체크 칸 · 단추를 감싼다. 안쪽 여백만큼 바깥으로 넓혀 단추는 접었을 때와 같은 자리 */
+.facility-tab:has(.facility-tab__button[aria-expanded='true']) {
+  bottom: calc(22px - var(--map-key-pad));
+  left: calc(var(--map-key-left) - var(--map-key-pad));
+  padding: var(--map-key-pad);
+  border-radius: 10px;
+  background: var(--map-key-bg);
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.12);
+  -webkit-backdrop-filter: blur(6px);
+  backdrop-filter: blur(6px);
+}
+
+/* 접음 (map-view.js의 renderLegend). 모바일은 범례 · 체크 칸을 숨기고 동그란 단추만 남긴다. 웹은 map-web.css가 옆으로 밀어 넣는다 */
+.facility-tab--closed .map-key {
+  display: none;
+}
+
+.facility-tab[hidden],
+.map-key[hidden],
+.facility-filter[hidden] {
+  display: none;
+}
+
+.map-key {
+  display: flex;
+  flex-direction: column;
+  box-sizing: border-box;
+  align-self: stretch;
+  min-width: 132px;
+  padding: 0 6px 0 4px; /* 상자 안쪽 여백(6px)과 더해 왼쪽 10px, 오른쪽 12px. 위아래 여백은 줄마다 높이로 준다 */
+}
+
+.map-key .legend__list {
+  gap: 0;
+  margin: 0;
+  padding-right: 0; /* new-style.css는 예전 범례의 ▾ 자리를 비워 두었다. 이 상자에는 ▾가 없다 */
+}
+
+/* 위쪽(범례) 줄도 아래 체크 칸과 비슷한 크기로 (2026-10-20 세환): 그림 칸 22px, 글자 13px.
+   범례 여섯 줄은 한 덩어리로 보이게 줄 사이 선을 두지 않는다. 선은 범례와 체크 칸 사이에 하나만.
+   누르는 줄이 아니라 높이는 체크 칸(44px)보다 조금 낮은 40px */
+.map-key .legend__item {
+  gap: 8px;
+  height: 40px;
+  color: var(--color-text);
+  font-size: var(--text-help);
+  font-weight: var(--font-medium);
+  white-space: nowrap;
+}
+
+/* 집 모양(지금 · 기간 내 · 부족)은 22px 칸 가운데에 16px로 */
+.map-key .legend__swatch {
+  width: 22px;
+  height: 16px;
+}
+
+/* 선택한 아파트 줄은 2026-10-20 세환이 준 시안 그대로 (지하철역 · 버스정류장 줄은 체크 칸과 겹쳐 뺐다).
+   위의 말풍선 구분 세 줄과 선 없이 이어 둔다 (2026-10-20 세환). 색은 common.css에 없는 시안의 값이라 여기서만 쓰는 변수로 둔다 */
+.map-key__marks {
+  --map-key-pin: #e5355c; /* 선택한 아파트: 진분홍 위치 표시 */
+}
+
+/* 선택한 아파트: 진분홍 위치 표시. 22px 칸 가운데 */
+.map-key__pin {
+  flex-shrink: 0;
+  width: 22px;
+  height: 22px;
+  fill: var(--map-key-pin);
+}
+
+/* 펼쳤을 때 마지막 체크 줄(버스정류장)과 단추 사이를 조금 띄운다 (2026-10-20 세환). 단추 자리는 그대로이고 상자가 위로 그만큼 커진다 */
+.facility-tab:has(.facility-tab__button[aria-expanded='true']) .facility-tab__button {
+  margin-top: 8px;
+}
+
+/* 동그란 위치 단추 (시안 2). 누르는 자리 44px 안에 지름 40px 반투명 흰 원, 가운데 남색 위치 그림. 상자가 펼쳐져 있으면 남색으로 채운다 */
+.facility-tab__button {
+  display: flex;
+  align-items: center;
+  height: var(--touch-size);
+  padding: 0;
+  border: 0;
+  background: transparent;
+  font-family: inherit;
+  cursor: pointer;
+}
+
+.facility-tab__round {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background: var(--new-control-glass, var(--color-bg));
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.15);
+  color: var(--new-chip-on, var(--color-primary));
+  -webkit-backdrop-filter: blur(6px);
+  backdrop-filter: blur(6px);
+}
+
+.facility-tab__pin {
+  width: 20px;
+  height: 20px;
+  fill: currentColor;
+}
+
+.facility-tab__button[aria-expanded='true'] .facility-tab__round {
+  background: var(--new-chip-on, var(--color-primary));
+  color: var(--color-on-primary);
+}
+
+.facility-tab__button:focus-visible .facility-tab__round {
+  outline: 2px solid var(--color-primary);
+  outline-offset: 2px;
+}
+
+/* 웹 배치(1024px 이상, map-web.css와 같은 폭): 지도 왼쪽 위 (2026-10-20 세환).
+   칩 줄과 안내(!)는 머리 줄로 옮겨 가므로(map-web.js) 예전 범례 자리(map-web.css의 .legend top 14px)가 비어 있다.
+   지도 왼쪽 끝의 목록 접기 단추(.map-web-fold, 폭 16px)에 가리지 않게 왼쪽 26px.
+   단추를 맨 위에 두고(HTML에서는 범례 뒤라 화면 읽기 순서는 그대로) 상자는 단추 아래로 펼친다 */
+@media (min-width: 1024px) {
+  .facility-tab {
+    --map-key-left: 26px;
+    top: 14px;
+    bottom: auto;
+  }
+
+  .facility-tab:has(.facility-tab__button[aria-expanded='true']) {
+    top: calc(14px - var(--map-key-pad));
+    bottom: auto;
+  }
+
+  .facility-tab__button {
+    order: -1;
+  }
+
+  .facility-tab:has(.facility-tab__button[aria-expanded='true']) .facility-tab__button {
+    margin-top: 0;
+    margin-bottom: 8px;
+  }
+}
+
+/* 체크 칸: 범례 아래 옅은 선으로 나눈다 */
+.facility-filter {
+  border-top: 1px solid var(--map-key-line);
+}
+
+.facility-filter__item {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  height: var(--touch-size);
+  color: var(--color-text);
+  font-size: var(--text-help);
+  font-weight: var(--font-medium);
+  white-space: nowrap;
+  cursor: pointer;
+}
+
+/* 체크 줄 사이에는 선을 두지 않는다 (2026-10-20 세환. 범례 줄과 같게). 선은 범례와 체크 칸 사이에 하나만 */
+
+
+.facility-filter__input {
+  position: absolute;
+  inset: 0;
+  margin: 0;
+  opacity: 0;
+  cursor: pointer;
+}
+
+/* 줄의 차례: 그림 · 이름 · (오른쪽 끝) 체크 칸 (2026-10-20 세환. 예전에는 체크 칸이 맨 앞).
+   문서 안의 차례(입력 · 체크 · 그림 · 이름)는 그대로 두어 :checked ~ 규칙이 그대로 듣게 한다 */
+.facility-filter__dot {
+  order: 1;
+}
+
+.facility-filter__item > span:last-child {
+  order: 2;
+}
+
+/* 체크 칸. 켜면 파랑 바탕에 흰 체크 */
+.facility-filter__check {
+  order: 3;
+  margin-left: auto;
+  display: flex;
+  flex-shrink: 0;
+  align-items: center;
+  justify-content: center;
+  box-sizing: border-box;
+  width: 18px;
+  height: 18px;
+  border: 1.5px solid var(--color-line-strong);
+  border-radius: 4px;
+  background: var(--color-bg);
+}
+
+.facility-filter__input:checked + .facility-filter__check {
+  border-color: var(--color-primary);
+  background: var(--color-primary);
+}
+
+.facility-filter__input:checked + .facility-filter__check::after {
+  width: 5px;
+  height: 9px;
+  margin-top: -2px;
+  border: solid var(--color-on-primary);
+  border-width: 0 2px 2px 0;
+  transform: rotate(45deg);
+  content: '';
+}
+
+.facility-filter__input:focus-visible + .facility-filter__check {
+  outline: 2px solid var(--color-primary);
+  outline-offset: 2px;
+}
+
+/* 종류 그림: 지도 아이콘과 같은 색 동그라미(지하철은 둥근 네모) + 흰 그림 */
+.facility-filter__dot {
+  display: flex;
+  flex-shrink: 0;
+  align-items: center;
+  justify-content: center;
+  box-sizing: border-box;
+  width: 22px;
+  height: 22px;
+  border-radius: 50%; /* 지도 아이콘처럼 흰 테두리 없이 (2026-10-20) */
+  background: var(--facility-color);
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
+}
+
+.facility--sw8 .facility-filter__dot,
+.facility--bus .facility-filter__dot {
+  border-radius: 6px;
+}
+
+.facility-filter__dot .facility__icon {
+  width: 14px;
+  height: 14px;
+  fill: var(--color-on-primary);
+}
+
+/* 끈 종류: 그림과 이름을 흐리게 */
+.facility-filter__input:not(:checked) ~ .facility-filter__dot {
+  background: var(--color-line-strong);
+}
+
+.facility-filter__input:not(:checked) ~ .facility-filter__dot .facility__glyph-text {
+  fill: var(--color-line-strong);
+}
+
+.facility-filter__input:not(:checked) ~ span:last-child {
+  color: var(--color-text-hint);
+}
+
+/* 버스정류장 아이콘은 지하철역처럼 둥근 네모 (카카오 지도 모양) */
+.facility--bus .facility__dot {
+  border-radius: 6px;
+}
+
+/* ───────── 넓게 볼 때 고른 아파트 (map-view.js의 renderPickedPin) ─────────
+   동 표시 · 구 표시 수준에서 마지막으로 연 아파트 자리에 빨간 위치 표시. 누르면 그 아파트 창을 다시 연다.
+   누르는 자리는 44px, 그림은 아래 끝이 아파트 자리에 오게 그 안의 아래쪽에 둔다 */
+.picked-pin {
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  width: var(--touch-size);
+  height: var(--touch-size);
+  padding: 0;
+  border: 0;
+  background: transparent;
+  cursor: pointer;
+}
+
+.picked-pin__shape {
+  position: relative;
+  z-index: 1;
+  width: 28px;
+  height: 37px;
+  /* 평평한 한 가지 빨강. 흰 테두리와 그림자 없이 (2026-10-20 팀장 결정) */
+  fill: #e5355c; /* 범례의 '선택한 아파트'(.map-key__marks의 --map-key-pin)와 같은 시안 색 */
+}
+
+/* 핀과 말풍선 상자. 상자의 아래 가운데가 아파트 자리 (renderPickedPin의 yAnchor 1) */
+.picked-pin-wrap {
+  position: relative;
+  display: flex;
+  justify-content: center;
+}
+
+/* 핀을 누르면 나오는 말풍선 (2026-10-20). 핀 위에 붙는다. 누르면 그 아파트의 창을 다시 연다.
+   그림자 없이 옅은 선 하나, 글자는 아파트 정보 탭과 같게 (이름 13 굵게 #1b1b1b, 그 밑 13 회색) */
+.picked-pin__bubble {
+  position: absolute;
+  bottom: calc(100% + 2px);
+  left: 50%;
+  z-index: 2;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-width: 160px;
+  max-width: 240px;
+  padding: 10px 14px;
+  border: 1px solid var(--new-sheet-line, var(--color-line));
+  border-radius: 10px;
+  background: var(--color-bg);
+  color: var(--new-sheet-name, var(--color-text));
+  font-family: inherit;
+  line-height: var(--line-height);
+  text-align: left;
+  cursor: pointer;
+  transform: translateX(-16px);
+}
+
+.picked-pin__bubble[hidden] {
+  display: none;
+}
+
+/* 꼬리: 선 색 삼각형 위에 흰 삼각형을 1px 올려 선이 이어져 보이게 */
+.picked-pin__bubble::before,
+.picked-pin__bubble::after {
+  content: '';
+  position: absolute;
+  left: 11px;
+  border: 6px solid transparent;
+}
+
+.picked-pin__bubble::before {
+  top: 100%;
+  border-top-color: var(--new-sheet-line, var(--color-line));
+}
+
+.picked-pin__bubble::after {
+  top: calc(100% - 1px);
+  border-top-color: var(--color-bg);
+}
+
+.picked-pin__text {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+
+.picked-pin__title {
+  font-size: var(--text-help);
+  font-weight: var(--font-bold);
+}
+
+.picked-pin__place {
+  overflow: hidden;
+  color: var(--color-text-sub);
+  font-size: var(--text-help);
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.picked-pin__icon {
+  flex: none;
+  width: 20px;
+  height: 20px;
+  fill: var(--color-text-sub);
+}
+
+/* 핀 아래 끝(아파트 자리)에서 퍼지는 빨간 파동. 내 위치(new-style.css의 .my-location)와 같은 움직임, 색만 빨강 (2026-10-20) */
+.picked-pin-wrap::before,
+.picked-pin-wrap::after {
+  content: '';
+  position: absolute;
+  bottom: -7px; /* 가운데가 핀 끝(아파트 자리)에 온다 */
+  left: 50%;
+  width: 14px;
+  height: 14px;
+  margin-left: -7px;
+  border-radius: 50%;
+  pointer-events: none;
+}
+
+.picked-pin-wrap::before {
+  background: #e5355c;
+  opacity: 0.35;
+  animation: picked-pin-pulse 2s ease-out infinite;
+}
+
+.picked-pin-wrap::after {
+  animation: picked-pin-ring 2s ease-out 1s infinite;
+}
+
+@keyframes picked-pin-pulse {
+  to {
+    opacity: 0;
+    transform: scale(4);
+  }
+}
+
+@keyframes picked-pin-ring {
+  from {
+    box-shadow: 0 0 0 0 rgba(229, 53, 92, 0.35);
+  }
+  to {
+    box-shadow: 0 0 0 24px rgba(229, 53, 92, 0);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .picked-pin-wrap::before,
+  .picked-pin-wrap::after {
+    display: none;
+  }
+}
+
+/* ───────── 넓게 볼 때 선택한 아파트 카드 (웹만, map-view.js의 renderPickedCard) ───────── */
+.picked-card {
+  display: none; /* 모바일에는 없다. 웹(map-web.css)에서만 보인다 */
+}
+
+.picked-pin:focus-visible {
+  outline: 2px solid var(--color-primary);
+  outline-offset: 2px;
+}
+
+/* 안내 ( ! ): 범례가 왼쪽 아래로 내려가 그 자리(왼쪽 위)로 붙인다 (2026-10-20. 예전에는 범례 오른쪽, new-style.css의 left 104px) */
+.map-area .info-tip {
+  left: 10px;
+}
+
+/* 말풍선은 아이콘 왼쪽 끝에 맞춰 오른쪽으로 펼친다. 화면 밖(왼쪽)으로 나가 잘리던 것을 막는다 (2026-10-20). 좁은 화면에서는 폭을 줄인다 */
+.map-area .info-tip .info-tip__text {
+  left: 0;
+  width: 240px;
+  max-width: calc(100vw - 20px);
+  box-sizing: border-box;
+}
+
+
+/* ───────── 모바일 표시 · 시설 창 (2026-10-20) ─────────
+   네이버 · 카카오 · 구글 지도의 레이어 창처럼, 오른쪽 지도 단추 맨 위의 눈 단추를 누르면 아래에서 올라온다.
+   창에는 말풍선 구분(지금 · 기간 내 · 부족 · 선택한 아파트)과 시설 체크 칸. 지도를 덮던 왼쪽 상자와 동그란 단추는 쓰지 않는다.
+   웹(1024px 이상)은 map-web.css의 왼쪽 위 상자 그대로 */
+.map-button--layers .map-button__icon {
+  width: 22px;
+  height: 22px;
+  fill: var(--new-chip-on, var(--color-primary));
+}
+
+.facility-sheet__head {
+  display: none;
+}
+
+@media (max-width: 1023px) {
+  .facility-tab.facility-tab--sheet,
+  .facility-tab.facility-tab--sheet:has(.facility-tab__button[aria-expanded]) {
+    /* 화면 폭 전체가 아니라 오른쪽 아래에 내용만큼의 작은 창 (2026-10-20 팀장 결정). 둘레는 12px 띄운다 */
+    position: fixed;
+    top: auto;
+    right: 12px;
+    bottom: calc(12px + env(safe-area-inset-bottom));
+    left: auto;
+    z-index: 30;
+    align-items: stretch;
+    width: max-content;
+    min-width: 200px;
+    max-height: calc(100vh / var(--page-zoom, 1) - 120px);
+    overflow-y: auto;
+    padding: 2px 16px 10px;
+    border: 1px solid var(--new-sheet-line, var(--color-line));
+    border-radius: 14px;
+    background: rgba(255, 255, 255, 0.72); /* 반투명 흰색 + 살짝 흐림 (2026-10-20 팀장 결정, 0.86 → 0.72). 지도가 비쳐 덜 답답하게 */
+    box-shadow: none;
+    -webkit-backdrop-filter: blur(6px);
+    backdrop-filter: blur(6px);
+    transform: translateY(calc(100% + 24px));
+    visibility: hidden;
+    transition: transform 0.28s cubic-bezier(0.32, 0.72, 0, 1), visibility 0s linear 0.28s;
+  }
+
+  .facility-tab.facility-tab--sheet-open,
+  .facility-tab.facility-tab--sheet-open:has(.facility-tab__button[aria-expanded]) {
+    transform: none;
+    visibility: visible;
+    transition: transform 0.28s cubic-bezier(0.32, 0.72, 0, 1);
+  }
+
+  .facility-tab--sheet .map-key {
+    display: flex !important; /* 창 안에서는 접지 않는다 */
+    padding: 0;
+  }
+
+  .facility-tab--sheet .facility-tab__button {
+    display: none; /* 동그란 단추 대신 오른쪽 눈 단추 (.map-button--layers) */
+  }
+
+  .facility-tab--sheet .facility-sheet__head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    height: 44px;
+    margin-bottom: 2px;
+    border-bottom: 1px solid var(--new-sheet-line, var(--color-line));
+  }
+
+  .facility-sheet__title {
+    color: var(--new-sheet-name, var(--color-text));
+    font-size: var(--text-label);
+    font-weight: var(--font-bold);
+  }
+
+  .facility-sheet__close {
+    width: 44px;
+    height: 44px;
+    margin-right: -12px;
+    padding: 0;
+    border: 0;
+    background: none;
+    color: var(--color-text-sub);
+    font-size: 16px;
+    cursor: pointer;
+  }
+
+  .facility-dim {
+    position: fixed;
+    inset: 0;
+    z-index: 29;
+    background: rgba(0, 0, 0, 0.3);
+  }
+
+  .facility-dim[hidden] {
+    display: none;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .facility-tab.facility-tab--sheet,
+  .facility-tab.facility-tab--sheet-open {
+    transition: none;
+  }
+}

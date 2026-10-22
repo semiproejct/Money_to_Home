@@ -1,0 +1,179 @@
+/* 지역 선택 (P-05 ⑬). 담당: 김해원
+   지도 화면의 틀(.map-app) 아래쪽에서 올라오는 창이다. 색과 크기는 common.css :root의 이름으로만 쓴다.
+   기준: 확정 목업 v3의 "v3 · P-05 ⑬ 구·동 선택" (docs/mockups/P05_13.png) */
+
+.region-sheet {
+  position: absolute;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  z-index: 5; /* 지도 위의 버튼과 범례보다 위 */
+  height: 72%; /* 높이를 고정한다. 구마다 동의 수가 달라도 창의 크기가 변하지 않는다 */
+  display: flex;
+  border-radius: 20px 20px 0 0;
+  background: var(--color-bg);
+  box-shadow: 0 -4px 16px rgba(0, 0, 0, 0.12);
+  animation: region-sheet-up 0.28s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+@keyframes region-sheet-up {
+  from {
+    transform: translateY(100%);
+  }
+  to {
+    transform: translateY(0);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .region-sheet {
+    animation: none;
+  }
+}
+
+.region-sheet__inner {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  min-height: 0;
+  padding: 8px var(--page-padding) 20px;
+}
+
+.region-sheet__handle {
+  align-self: center;
+  width: 40px;
+  height: 5px;
+  border-radius: var(--radius-pill);
+  background: var(--color-line-strong);
+}
+
+.region-sheet__head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 14px 0 4px;
+}
+
+.region-sheet__title {
+  margin: 0;
+  font-size: 20px;
+  font-weight: var(--font-bold);
+}
+
+.region-sheet__close {
+  width: var(--touch-size);
+  height: var(--touch-size);
+  margin-right: -10px;
+  border: 0;
+  background: transparent;
+  color: var(--color-text);
+  font-family: inherit;
+  font-size: 28px;
+  font-weight: var(--font-regular);
+  line-height: 1;
+  cursor: pointer;
+}
+
+/* 동이 많은 구(북구 22개)는 이 안에서 위아래로 움직인다. 제목, 구, 버튼은 제자리에 있다.
+   남는 높이를 이 상자가 다 차지해서, 동이 적은 구에서도 아래 버튼의 자리가 같다.
+   스크롤 막대는 그리지 않는다. 막대가 생겼다 없어졌다 하면 격자의 폭이 달라져 버튼이 움직인다. */
+.region-sheet__body {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  scrollbar-width: none;
+}
+
+.region-sheet__body::-webkit-scrollbar {
+  display: none;
+}
+
+.region-sheet__label {
+  margin: 12px 0 8px;
+  color: var(--color-text-sub);
+  font-size: var(--text-label);
+  font-weight: var(--font-medium);
+}
+
+.region-sheet button {
+  font-family: inherit;
+}
+
+/* 구: 한 덩어리로 붙인 다섯 칸 */
+.region-sheet__gu {
+  display: flex;
+  overflow: hidden;
+  border: 1px solid var(--color-line-strong);
+  border-radius: var(--radius-card);
+}
+
+.region-sheet__gu-option {
+  flex: 1;
+  min-height: 48px;
+  padding: 0;
+  border: 0;
+  background: var(--color-bg);
+  color: var(--color-text);
+  font-size: var(--text-item);
+  font-weight: var(--font-medium);
+  cursor: pointer;
+}
+
+.region-sheet__gu-option + .region-sheet__gu-option {
+  border-left: 1px solid var(--color-line);
+}
+
+/* 동: 세 칸 격자. "○○구 전체"는 한 줄을 다 쓴다. */
+.region-sheet__dongs {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 8px;
+  align-content: start;
+  padding-bottom: 4px;
+}
+
+.region-sheet__dong {
+  min-height: var(--touch-size);
+  padding: 0 4px;
+  border: 1px solid var(--color-line-strong);
+  border-radius: var(--radius-card);
+  background: var(--color-bg);
+  color: var(--color-text);
+  font-size: var(--text-body);
+  font-weight: var(--font-medium);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  cursor: pointer;
+}
+
+.region-sheet__dong--all {
+  grid-column: 1 / -1;
+}
+
+.region-sheet__gu-option[aria-pressed='true'],
+.region-sheet__dong[aria-pressed='true'] {
+  /* 고른 칸은 색만 바꾼다. 테두리 굵기와 글자 굵기를 바꾸면 글자가 조금씩 움직인다. */
+  border-color: var(--color-primary);
+  background: var(--color-primary);
+  color: var(--color-on-primary);
+}
+
+.region-sheet button:focus-visible {
+  outline: 2px solid var(--color-primary);
+  outline-offset: -3px;
+}
+
+.region-sheet__foot {
+  padding-top: 10px;
+}
+
+.region-sheet__note {
+  margin: 0 0 12px;
+  color: var(--color-text-sub);
+  font-size: var(--text-help);
+}
+
+.region-sheet__foot .button {
+  width: 100%;
+}

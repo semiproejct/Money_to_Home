@@ -1,0 +1,956 @@
+/* 지도 화면의 웹 배치 (가로 1024px 이상. 2026-10-20 팀장 결정으로 1200 → 1024, 입력 화면은 1200 그대로). 담당: 박채은 (2026-10-20 팀장 결정: 웹 지도 시안 2 "두 패널")
+   map.html에서 다른 CSS 뒤(new-style.css 다음)에 읽는다. 1199px 이하의 모양은 바꾸지 않는다.
+
+   배치 (화면 설계서 "웹에서는 아래 창이 왼쪽 패널이 되고, 왼쪽부터 목록 패널, 아파트 패널, 지도의 순서다")
+     ┌ 머리 줄 64px: 로고 | 검색 줄 | ············· 내 조건 · 수정 · 로그인 ┐
+     │ 목록 패널 400px │ 아파트 패널 420px (아파트를 열었을 때만) │ 지도        │  (1440px 기준. 창 폭에 비례해 줄어든다)
+   - 아래 창(#sheet)이 왼쪽 패널이 된다. 30% · 80% · 전체 단계와 끌기가 없다 (js/map-web.js가 막는다).
+   - 목록은 늘 열려 있고, 아파트를 열면 그 오른쪽에 아파트 패널이 붙고 지도가 그만큼 줄어든다.
+   - 목록 패널과 아파트 패널은 접을 수 있다 (각 패널 오른쪽 끝 가운데의 얇은 손잡이). 접은 패널만큼 지도가 넓어진다.
+   - 조건 창은 아래에서 올라오지 않고 화면 가운데 창으로 뜬다.
+
+   js/map-web.js가 html에 다는 표시
+     data-map-web-panel="list" | "apartment"   패널에 지금 보이는 것
+     data-map-web-fold                          목록 패널을 접었다
+     data-map-web-apt-fold                      아파트 패널을 접었다 */
+
+/* 웹 전용 요소 (머리 줄, 로고, 목록 접기 단추)는 모바일에서 숨긴다 */
+.map-web-bar,
+.map-web-logo,
+.map-web-filter,
+.map-web-fold {
+  display: none;
+}
+
+@media (min-width: 1024px) {
+  .map-body {
+    --sheet-duration: 0s; /* 패널은 움직이지 않고 바로 바뀐다. sheet.js도 이 값을 읽는다 */
+    --map-web-bar: 64px; /* 머리 줄 높이 */
+    --map-web-filter: 28px; /* 조건 줄 높이 (머리 줄 바로 아래, 2026-10-20. 44 → 28, 꾸밈을 빼고 글자만) */
+    --map-web-top: calc(var(--map-web-bar) + var(--map-web-filter)); /* 목록 · 지도가 시작하는 높이 */
+    /* 패널 폭은 창 폭에 비례한다 (2026-10-20). 1440px에서 400 · 420, 1200px에서 약 334 · 350, 1024px에서 300 · 320 (지도 약 400).
+       넓은 화면에서도 이보다 커지지 않는다 */
+    --map-web-list-open: clamp(300px, 27.8vw, 400px); /* 목록 패널을 펼쳤을 때의 폭. 조건 창도 이 폭이다 */
+    --map-web-list: var(--map-web-list-open); /* 목록 패널 폭 (접으면 0) */
+    --map-web-apt: 0px; /* 아파트 패널 폭. 아파트를 열면 clamp(320px, 29.2vw, 420px) */
+    --map-web-panel: calc(var(--map-web-list) + var(--map-web-apt)); /* 왼쪽 패널 전체 폭 = 지도의 왼쪽 끝 */
+    --map-web-search-left: 200px; /* 검색 줄의 왼쪽 (로고 오른쪽) */
+    --map-web-search-width: clamp(320px, 33vw, 480px); /* 좁은 웹에서는 줄어든다 (1024px에서 약 340) */
+    --shadow-modal: 0 12px 40px rgba(0, 0, 0, 0.22); /* 가운데 창 */
+
+    display: block;
+    position: relative;
+    height: calc(100vh / var(--page-zoom, 1)); /* 90%로 그려도 화면 높이를 다 채운다 (common.css) */
+    min-height: 0;
+    padding: 0;
+    overflow: hidden;
+    background: var(--color-bg);
+  }
+
+  html[data-map-web-panel="apartment"] .map-body {
+    --map-web-apt: clamp(320px, 29.2vw, 420px);
+  }
+
+  html[data-map-web-fold] .map-body {
+    --map-web-list: 0px;
+  }
+
+  /* 휴대폰 크기 틀(390 × 844)을 풀고 화면 전체를 쓴다. z-index를 주지 않아 안의 요소끼리 쌓는다 */
+  .map-app {
+    position: absolute;
+    inset: 0;
+    display: block;
+    width: auto;
+    max-width: none;
+    height: auto;
+    max-height: none;
+    border-radius: 0;
+    box-shadow: none;
+  }
+
+  /* ───────── 머리 줄 ───────── */
+  .map-web-bar {
+    position: absolute;
+    top: 0;
+    right: 0;
+    left: 0;
+    z-index: 5;
+    display: block;
+    height: var(--map-web-bar);
+    /* 파랑 머리 줄 (2026-10-20 팀장 결정). 왼쪽 rgb(42, 110, 193)에서 오른쪽 끝 rgb(120, 182, 240)까지 밝아지는 그라데이션 */
+    background-color: #2e4a6a; /* 짙은 청회색 (2026-10-20 팀장) */
+  }
+
+  /* 로고. 모양은 입력 화면과 같다 (common.css의 .header__home, .header__logo, .header__name, .header__to) */
+  .map-web-logo {
+    position: absolute;
+    top: 0;
+    left: 24px;
+    z-index: 8;
+    display: flex;
+    align-items: center;
+    height: var(--map-web-bar);
+  }
+
+  /* 로고 모양은 입력 화면(common.css의 1200px 이상 .header__home)과 같다. 1024 ~ 1199px에서도 같게 여기 다시 적는다 */
+  .map-web-logo .header__home {
+    position: relative;
+    top: 1px;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    min-height: var(--touch-size);
+    color: #ffffff; /* 파랑 머리 줄 위라 흰 글씨. "to"는 아래 금색 그대로 */
+    font-size: var(--text-amount);
+    font-weight: var(--font-bold);
+    letter-spacing: -0.02em;
+    text-decoration: none;
+  }
+
+  .map-web-logo .header__logo {
+    display: block;
+    width: 28px;
+    height: 28px;
+    /* 로고를 2px 내려 지붕 끝이 "머니 to 홈" 글자보다 솟지 않게 한다 (3px는 내려앉아 보였다) */
+    transform: translateY(2px);
+  }
+
+  .map-web-logo .header__name {
+    line-height: 1;
+    white-space: nowrap;
+  }
+
+  .map-web-logo .header__to {
+    margin: 0 2px;
+    color: var(--color-brand-gold);
+    font-size: var(--text-button);
+    vertical-align: baseline;
+  }
+
+  /* 검색 줄과 이름 검색 결과: 머리 줄 안 (지도 영역 밖이라 화면 기준으로 둔다) */
+  .search-row {
+    position: fixed;
+    top: 12px;
+    right: auto;
+    left: var(--map-web-search-left);
+    z-index: 6;
+    width: var(--map-web-search-width);
+    border: 0; /* 파랑 머리 줄 위라 파란 테두리와 그림자는 뺀다 (2026-10-20 팀장 결정). 모바일은 그대로 */
+    box-shadow: none;
+  }
+
+  .search-view {
+    position: fixed;
+    top: 58px;
+    right: auto;
+    left: var(--map-web-search-left);
+    z-index: 6;
+    width: var(--map-web-search-width);
+    max-height: 70vh;
+    overflow-y: auto;
+  }
+
+  /* 내 조건 줄: 머리 줄 오른쪽에 글자만. 검색 줄과 겹치지 않게 남은 폭 안에서 말줄임 */
+  .condition-bar {
+    position: absolute;
+    top: 0;
+    right: 16px;
+    z-index: 7;
+    box-sizing: border-box;
+    max-width: calc(100% - var(--map-web-search-left) - var(--map-web-search-width) - 40px);
+    height: var(--map-web-bar);
+    padding: 0 0 0 16px;
+    background: transparent;
+  }
+
+  .condition-bar__link {
+    height: var(--touch-size);
+    padding: 0 14px; /* 누르는 자리를 넓히고 오른쪽 끝에서 조금 안으로 (2026-10-20 팀장) */
+    color: #ffffff; /* 파랑 머리 줄 위의 "로그인" */
+    font-size: var(--text-item); /* 13px → 16px (2026-10-20 팀장 결정) */
+  }
+
+  /* 내 조건 문장과 수정은 목록 맨 위의 내 조건 상자(list.js, 김목산)로 옮겼다. 머리 줄에는 로그인만 남는다 (2026-10-20) */
+  .condition-bar__text,
+  .condition-bar__link--edit {
+    display: none;
+  }
+
+  /* ───────── 조건 줄: 머리 줄 바로 아래 (2026-10-20, 김목산) ─────────
+     [조건] · (구·동을 고르면) 지역 칩 | 넣은 조건 칩(.chip-row, map-web.js가 옮겨 온다) ······ 실거래 기준일 · 안내(!) */
+  .map-web-filter {
+    position: absolute;
+    top: var(--map-web-bar);
+    right: 0;
+    left: 0;
+    z-index: 5;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    box-sizing: border-box;
+    height: var(--map-web-filter);
+    padding: 0 24px;
+    border-bottom: 1px solid var(--color-line);
+    background: var(--color-bg);
+  }
+
+  .map-web-filter__button {
+    display: inline-flex;
+    flex: none;
+    align-items: center;
+    gap: 5px;
+    height: 30px;
+    padding: 0 12px;
+    border: 1px solid var(--color-line-strong);
+    border-radius: var(--radius-pill);
+    background: var(--color-bg);
+    color: var(--color-text);
+    font-family: inherit;
+    font-size: var(--text-help);
+    font-weight: var(--font-bold);
+    white-space: nowrap;
+    cursor: pointer;
+  }
+
+  .map-web-filter__button:hover {
+    border-color: var(--color-text-sub);
+  }
+
+  .map-web-filter__button:focus-visible {
+    outline: 2px solid var(--color-primary);
+    outline-offset: 1px;
+  }
+
+  /* 지역 칩: 구·동을 고르면 [조건] 옆으로 미끄러져 나온다 */
+  .map-web-filter__region {
+    max-width: 240px;
+    overflow: hidden;
+    border-color: var(--color-primary);
+    background: var(--color-primary-soft);
+    color: var(--color-primary);
+    animation: map-web-region-in 0.4s cubic-bezier(0.2, 0.8, 0.2, 1) both;
+  }
+
+  .map-web-filter__region svg {
+    flex: none;
+  }
+
+  @keyframes map-web-region-in {
+    from {
+      max-width: 0;
+      padding-right: 0;
+      padding-left: 0;
+      opacity: 0;
+      transform: translateX(-8px);
+    }
+    to {
+      max-width: 240px;
+      opacity: 1;
+      transform: none;
+    }
+  }
+
+  .map-web-filter__sep {
+    flex: none;
+    width: 1px;
+    height: 20px;
+    margin: 0 4px;
+    background: var(--color-line);
+  }
+
+  .map-web-filter__tags {
+    display: flex;
+    flex: 1;
+    min-width: 0;
+  }
+
+  /* 옮겨 온 칩 줄: 지도 위에 떠 있던 자리를 풀고 줄 안에 놓는다 */
+  .map-web-filter .chip-row {
+    position: static;
+    flex: 1;
+    min-width: 0;
+    margin: 0 !important; /* 아래 "접기 단추만큼 띄우기"는 지도 위에 있을 때의 것이다 */
+    padding: 0;
+  }
+
+  .map-web-filter .filter-chip {
+    height: 30px;
+    box-shadow: none;
+    font-size: var(--text-badge);
+  }
+
+  .map-web-filter__end {
+    display: flex;
+    flex: none;
+    align-items: center;
+    gap: 10px;
+    margin-left: auto;
+  }
+
+  .map-web-filter__base {
+    color: var(--color-text-hint);
+    font-size: var(--text-badge);
+    white-space: nowrap;
+  }
+
+  /* 옮겨 온 안내(!): 말풍선은 아래 오른쪽으로 연다 */
+  .map-web-filter .info-tip {
+    position: relative;
+    top: auto;
+    bottom: auto;
+    left: auto;
+    margin: 0 !important;
+  }
+
+  .map-web-filter .info-tip__text {
+    top: 32px;
+    right: 0;
+    bottom: auto;
+    left: auto;
+    z-index: 9;
+  }
+
+  /* 최소 스타일 (2026-10-20 팀장 결정): 단추 · 칩의 테두리와 바탕을 빼고 12px 글자만. 아래 선 하나만 남긴다.
+     누르는 자리는 줄 높이(28px) 전체 */
+  .map-web-filter {
+    gap: 2px;
+    padding: 0 16px;
+  }
+
+  .map-web-filter__button,
+  .map-web-filter .filter-chip {
+    height: var(--map-web-filter);
+    padding: 0 8px;
+    border: 0;
+    border-radius: 0;
+    background: none;
+    box-shadow: none;
+    font-size: var(--text-badge);
+  }
+
+  .map-web-filter__button:hover,
+  .map-web-filter .filter-chip:hover {
+    color: var(--color-primary);
+  }
+
+  .map-web-filter__button svg {
+    width: 13px;
+    height: 13px;
+  }
+
+  .map-web-filter__region,
+  .map-web-filter .filter-chip--on {
+    background: none;
+    color: var(--color-primary);
+  }
+
+  .map-web-filter .filter-tag__text {
+    padding: 0 2px 0 0;
+  }
+
+  .map-web-filter .filter-tag__remove {
+    padding: 0 0 0 3px;
+    font-size: 10px;
+  }
+
+  .map-web-filter__sep {
+    height: 12px;
+    margin: 0 4px;
+  }
+
+  .map-web-filter .info-tip__button {
+    transform: scale(0.8);
+  }
+
+  .map-web-filter .info-tip__text {
+    top: 24px;
+  }
+
+  /* 조건 줄의 "조건"은 파란색(primary)으로 (2026-10-20 팀장 결정). 검색 줄 오른쪽의 조건 아이콘도 모바일처럼 웹에서 보인다 */
+  .map-web-filter__button:not(.map-web-filter__region) {
+    color: var(--color-primary);
+  }
+
+  /* 아파트 패널의 "아파트 정보 · 시나리오" 탭을 조금 작게. 글자와 밑줄 사이를 좁혀 아래 정보 칸을 넓힌다 (47 → 36px, 2026-10-20) */
+  #apartment-panel .apt__tab {
+    height: 36px;
+    padding: 0;
+    font-size: var(--text-label);
+  }
+
+  #apartment-panel .apt__tab[aria-selected="true"]::after {
+    height: 2px;
+  }
+
+  /* ───────── 지도: 머리 줄 아래, 패널 오른쪽 ───────── */
+  .map-area {
+    position: absolute;
+    top: var(--map-web-top);
+    right: 0;
+    bottom: 0;
+    left: var(--map-web-panel);
+  }
+
+  .map-app .map {
+    bottom: 0 !important; /* 창 단계에 따라 지도를 줄이던 것(sheet.css의 data-sheet-map)을 쓰지 않는다 */
+  }
+
+  /* 검색 줄이 지도 밖으로 나갔으니 지도 위의 것들을 위로 올린다 */
+  .chip-row {
+    top: 10px;
+  }
+
+  .legend {
+    top: 14px;
+  }
+
+  .info-tip {
+    top: 15px;
+  }
+
+  /* 지도 버튼은 세로 가운데보다 살짝 아래 (2026-10-20 팀장 결정). 창 단계(sheet.css의 data-sheet="30")와 상관없이 둔다 */
+  .map-controls,
+  .map-app[data-sheet] .map-controls {
+    top: 56%;
+    right: 16px;
+    bottom: auto;
+    transform: translateY(-50%);
+    transition: none;
+  }
+
+  /* 넓은 지도에서 잘 보이게: 반투명 대신 흰 바탕 + 그림자, 48 × 48로 조금 크게 (2026-10-20 팀장 결정). 모바일은 그대로 */
+  .map-controls .map-button {
+    width: 48px;
+    height: 48px;
+    background: var(--color-bg);
+    -webkit-backdrop-filter: none;
+    backdrop-filter: none;
+  }
+
+  .map-controls > .map-button,
+  .map-controls .zoom-buttons {
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
+  }
+
+  .map-controls .zoom-buttons .map-button {
+    box-shadow: none;
+  }
+
+  .map-controls .zoom-buttons .map-button + .map-button {
+    border-top-color: var(--color-line);
+  }
+
+  .map-controls .map-button__main {
+    font-size: 17px;
+  }
+
+  .map-controls .map-button__sub {
+    font-size: 11px;
+  }
+
+  /* 목록이 늘 보이므로 지도 위 "목록" 단추는 숨긴다 */
+  .list-button {
+    display: none;
+  }
+
+  /* ───────── 왼쪽 패널 (아래 창) ───────── */
+  .sheet {
+    top: var(--map-web-top);
+    right: auto;
+    bottom: 0;
+    left: 0;
+    display: grid;
+    grid-template-columns: var(--map-web-list) var(--map-web-apt);
+    grid-template-rows: minmax(0, 1fr);
+    width: var(--map-web-panel);
+    height: auto !important; /* 단계마다의 높이(30% · 80% · 전체)를 쓰지 않는다 */
+    border-right: 1px solid var(--color-line);
+    border-radius: 0 !important;
+    box-shadow: none !important;
+    transform: none !important;
+    animation: none !important;
+    transition: none !important;
+  }
+
+  /* 손잡이는 쓰지 않는다 */
+  .sheet__handle {
+    display: none !important;
+  }
+
+  .sheet .apt__head,
+  .sheet .list__head {
+    touch-action: auto;
+  }
+
+  #apt-list,
+  #apartment-panel {
+    grid-row: 1;
+    min-width: 0;
+    min-height: 0;
+  }
+
+  /* 아파트를 보는 동안에도 목록이 왼쪽에 남는다 (sheet.js가 hidden을 달아도 보인다) */
+  html[data-map-web-panel="apartment"] #apt-list[hidden] {
+    display: block !important;
+  }
+
+  html[data-map-web-fold] #apt-list {
+    display: none !important;
+  }
+
+  #apartment-panel {
+    border-left: 1px solid var(--color-line);
+    background: var(--color-bg);
+  }
+
+  /* 로드뷰: 아파트 패널 맨 위. 두 탭 모두 보인다 (js/map-web.js가 자리를 옮긴다).
+     가로:세로 2 : 1 (420 폭에서 210). 예전 황금비(260)보다 50 줄여 아래 정보가 더 보이게 (2026-10-20 팀장) */
+  #apartment-panel > .apt-roadview {
+    aspect-ratio: 2 / 1;
+    margin: 0 0 8px;
+  }
+
+  /* 공유 · ✕는 로드뷰 사진 오른쪽 위에 올린다. 사진 위에서도 보이게 반투명 검은 바탕에 흰 아이콘 (2026-10-20 팀장 결정).
+     비는 첫 줄은 접어서 이름 줄과 면적 줄이 한 줄씩 위로 올라온다 (가로 자리는 그대로). "← 목록"이 있을 때는 첫 줄을 둔다 */
+  #apartment-panel:has(> .apt-roadview:not([hidden])) {
+    position: relative;
+  }
+
+  #apartment-panel:has(> .apt-roadview:not([hidden])) .apt__top:not(:has(.apt__back:not([hidden]))) {
+    height: 0;
+    min-height: 0;
+    margin: 0;
+  }
+
+  #apartment-panel:has(> .apt-roadview:not([hidden])) .apt__nav {
+    position: absolute;
+    top: 12px;
+    right: 12px;
+    z-index: 2;
+    gap: 0;
+    padding: 2px 4px;
+    border-radius: 999px;
+    background: rgba(0, 0, 0, 0.5);
+  }
+
+  #apartment-panel:has(> .apt-roadview:not([hidden])) .apt__nav .share-action,
+  #apartment-panel:has(> .apt-roadview:not([hidden])) .apt__nav .apt__nav-button--close {
+    color: #fff;
+  }
+
+  #apartment-panel:has(> .apt-roadview:not([hidden])) .apt__nav .share-icon {
+    stroke: #fff;
+  }
+
+  /* 마우스를 올리면 그 단추에 옅은 흰 원 */
+  #apartment-panel:has(> .apt-roadview:not([hidden])) .apt__nav .share-action,
+  #apartment-panel:has(> .apt-roadview:not([hidden])) .apt__nav .apt__nav-button--close {
+    width: 40px;
+    height: 40px;
+    border-radius: 999px;
+    transition: background-color 0.15s ease, transform 0.15s ease;
+  }
+
+  #apartment-panel:has(> .apt-roadview:not([hidden])) .apt__nav .share-action:hover,
+  #apartment-panel:has(> .apt-roadview:not([hidden])) .apt__nav .share-action:focus-visible,
+  #apartment-panel:has(> .apt-roadview:not([hidden])) .apt__nav .apt__nav-button--close:hover,
+  #apartment-panel:has(> .apt-roadview:not([hidden])) .apt__nav .apt__nav-button--close:focus-visible {
+    background: rgba(255, 255, 255, 0.22);
+  }
+
+  html[data-map-web-fold] #apartment-panel {
+    border-left: 0;
+  }
+
+  html[data-map-web-fold]:not([data-map-web-panel="apartment"]) .sheet {
+    border-right: 0;
+  }
+
+  /* 넓게 볼 때 선택한 아파트 카드: 지도 왼쪽 아래 (2026-10-20). 카카오 로고(맨 왼쪽 아래)는 가리지 않게 띄운다.
+     그림자 없이 옅은 선 하나. 글자와 간격은 아파트 정보 탭과 같다 (new-style.css의 .apt-info: 이름 13 회색 108 폭 → 여기는 80,
+     값 14 #333, 줄 위아래 7px, 구분선 #e5e5e5) */
+  .picked-card {
+    position: absolute;
+    top: 0; /* 지도 오른쪽 위 모서리에 딱 붙인다 (2026-10-20 팀장 결정. 예전에는 왼쪽 아래) */
+    right: 0;
+    z-index: 5;
+    display: block;
+    box-sizing: border-box;
+    width: 300px;
+    padding: 16px 20px 18px;
+    border-bottom: 1px solid var(--new-sheet-line, var(--color-line));
+    border-left: 1px solid var(--new-sheet-line, var(--color-line));
+    border-radius: 0 0 0 12px; /* 모서리에 붙어 왼쪽 아래만 둥글게 */
+    background: var(--color-bg);
+    line-height: var(--line-height);
+  }
+
+  .picked-card[hidden] {
+    display: none;
+  }
+
+  .picked-card__head {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding-bottom: 12px;
+    border-bottom: 1px solid var(--new-sheet-line, var(--color-line));
+  }
+
+  .picked-card__badge {
+    display: flex;
+    flex: none;
+    align-items: center;
+    justify-content: center;
+    width: 36px;
+    height: 36px;
+    border-radius: 8px;
+    background: var(--color-bg-sub);
+  }
+
+  .picked-card__badge svg {
+    width: 20px;
+    height: 20px;
+    fill: var(--color-text-sub);
+  }
+
+  .picked-card__titles {
+    display: flex;
+    flex: 1;
+    flex-direction: column;
+    min-width: 0;
+  }
+
+  .picked-card__title {
+    color: var(--new-sheet-name, var(--color-text));
+    font-size: var(--text-label);
+    font-weight: var(--font-bold);
+  }
+
+  .picked-card__place {
+    overflow: hidden;
+    color: var(--color-text-sub);
+    font-size: var(--text-help);
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .picked-card__close {
+    flex: none;
+    width: 28px;
+    height: 28px;
+    margin-right: -6px;
+    padding: 0;
+    border: 0;
+    border-radius: 999px;
+    background: transparent;
+    color: var(--color-text-sub);
+    font-size: 14px;
+    cursor: pointer;
+  }
+
+  .picked-card__close:hover {
+    background: var(--color-bg-sub);
+  }
+
+  .picked-card__rows {
+    margin: 8px 0 14px;
+    padding: 0;
+  }
+
+  .picked-card__row {
+    display: flex;
+    align-items: center;
+    padding: 7px 0;
+  }
+
+  .picked-card__row dt {
+    flex-shrink: 0;
+    width: 80px;
+    color: var(--color-text-sub);
+    font-size: var(--text-help);
+  }
+
+  .picked-card__row dd {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    min-width: 0;
+    margin: 0;
+    color: var(--new-sheet-value, var(--color-text));
+    font-size: var(--text-label);
+    font-weight: var(--font-medium);
+  }
+
+  .picked-card__chip {
+    display: inline-flex;
+    flex: none;
+    align-items: center;
+    justify-content: center;
+    width: 18px;
+    height: 18px;
+    border-radius: 999px;
+    color: #ffffff;
+    font-size: 10px;
+    font-weight: var(--font-bold);
+  }
+
+  .picked-card__chip--subway {
+    background: #2f6fb6;
+  }
+
+  .picked-card__chip--bus {
+    background: #2b3a8c; /* 지도의 버스정류장 아이콘과 같은 남색 */
+  }
+
+  .picked-card__value--off {
+    color: var(--color-text-hint);
+    font-weight: var(--font-regular);
+  }
+
+  /* "아파트 다시 보기": 꾸밈 없는 글자 단추 (2026-10-20 팀장 결정으로 파란 단추를 뺌. 모양은 시안을 정한 뒤 다시) */
+  .picked-card__go {
+    display: block;
+    width: 100%;
+    padding: 6px 0 0;
+    border: 0;
+    background: none;
+    color: var(--color-primary);
+    font-family: inherit;
+    font-size: var(--text-label);
+    font-weight: var(--font-bold);
+    text-align: left;
+    cursor: pointer;
+  }
+
+  .picked-card__go:hover {
+    text-decoration: underline;
+  }
+
+  /* 범례 + 시설 체크 (map.css의 .facility-tab): 지도 왼쪽 위 모서리에 붙인 상자. 접고 펼 때 왼쪽으로 미끄러진다 (2026-10-20 팀장 결정).
+     여닫는 것은 목록 · 아파트 패널과 같은 얇은 손잡이(상자 오른쪽 끝)다. 접어도 손잡이는 지도 왼쪽 끝에 남는다.
+     예전의 동그란 위치 단추와 반투명 흰 상자 · 흐림은 웹에서 쓰지 않는다 */
+  .facility-tab,
+  .facility-tab:has(.facility-tab__button[aria-expanded='true']) {
+    top: 14px;
+    bottom: auto;
+    left: 0;
+    padding: 6px 4px 6px 8px;
+    border: 1px solid var(--new-sheet-line, var(--color-line));
+    border-left: 0;
+    border-radius: 0 10px 10px 0;
+    background: rgba(255, 255, 255, 0.72); /* 반투명 흰색 + 살짝 흐림 (2026-10-20 팀장 결정, 모바일 창과 같다. 0.86 → 0.72) */
+    box-shadow: none;
+    -webkit-backdrop-filter: blur(6px);
+    backdrop-filter: blur(6px);
+    transition: transform 0.25s ease;
+  }
+
+  .facility-tab--closed .map-key {
+    display: flex; /* 웹은 숨기지 않고 밀어 넣는다 */
+  }
+
+  .facility-tab--closed,
+  .facility-tab--closed:has(.facility-tab__button) {
+    transform: translateX(-100%);
+  }
+
+  .facility-tab__button,
+  .facility-tab:has(.facility-tab__button[aria-expanded='true']) .facility-tab__button {
+    position: absolute;
+    top: 10px;
+    left: 100%;
+    order: 0;
+    justify-content: center;
+    width: 16px;
+    height: 56px;
+    margin: 0 0 0 0;
+    border: 1px solid var(--new-sheet-line, var(--color-line));
+    border-left: 0;
+    border-radius: 0 8px 8px 0;
+    background: var(--color-bg);
+    color: var(--color-text-sub);
+    font-size: 16px;
+    font-weight: var(--font-bold);
+    line-height: 1;
+  }
+
+  .facility-tab__button::before {
+    content: '‹';
+  }
+
+  /* 접혀 있으면 손잡이가 남색 탭 + 흰 눈 그림이 된다 (2026-10-20 팀장 결정. 예전 글자 "표시 · 시설"을 그림으로 바꿈). 지도 왼쪽 끝에 붙는다 */
+  .facility-tab__button[aria-expanded='false'] {
+    width: 34px;
+    height: 30px;
+    padding: 0;
+    border: 0;
+    background: var(--new-chip-on, #043870);
+    color: #ffffff;
+  }
+
+  .facility-tab__button[aria-expanded='false']::before {
+    content: '';
+    width: 18px;
+    height: 18px;
+    background: currentColor;
+    -webkit-mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath d='M12 5C6.5 5 2.4 8.6 1 12c1.4 3.4 5.5 7 11 7s9.6-3.6 11-7c-1.4-3.4-5.5-7-11-7zm0 11.5A4.5 4.5 0 1 1 12 7.5a4.5 4.5 0 0 1 0 9zm0-7a2.5 2.5 0 1 0 0 5 2.5 2.5 0 0 0 0-5z'/%3E%3C/svg%3E") center / contain no-repeat;
+    mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath d='M12 5C6.5 5 2.4 8.6 1 12c1.4 3.4 5.5 7 11 7s9.6-3.6 11-7c-1.4-3.4-5.5-7-11-7zm0 11.5A4.5 4.5 0 1 1 12 7.5a4.5 4.5 0 0 1 0 9zm0-7a2.5 2.5 0 1 0 0 5 2.5 2.5 0 0 0 0-5z'/%3E%3C/svg%3E") center / contain no-repeat;
+  }
+
+  .facility-tab__button[aria-expanded='false']:hover {
+    color: #ffffff;
+    filter: brightness(1.15);
+  }
+
+  .facility-tab__button:hover {
+    color: var(--color-text);
+  }
+
+  .facility-tab__round {
+    display: none;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .facility-tab,
+    .facility-tab:has(.facility-tab__button[aria-expanded='true']) {
+      transition: none;
+    }
+  }
+
+  /* 모바일의 눈 단추와 표시 · 시설 창은 웹에서 쓰지 않는다 (웹은 왼쪽 위 상자) */
+  .map-button--layers,
+  .facility-dim {
+    display: none !important;
+  }
+
+  /* 목록의 ✕는 쓰지 않는다 (목록은 늘 열려 있다. 접기는 손잡이) */
+  .list__close {
+    display: none !important;
+  }
+
+  .list__head {
+    padding-top: 14px;
+  }
+
+  /* 패널은 늘 30% 단계로 연다(js/map-web.js). 그 단계에서도 탭과 탭 내용을 보이고, 30%의 평균가 · 안내 줄은 숨긴다 */
+  .sheet[data-stage="30"] .apt__tabs {
+    display: flex;
+  }
+
+  .sheet[data-stage="30"] .apt__panels {
+    display: block;
+  }
+
+  .sheet .apt__money,
+  .sheet .apt__hint {
+    display: none;
+  }
+
+  /* 패널 접기 · 펴기 손잡이 (2026-10-20 팀장 결정). 패널 오른쪽 끝의 세로 가운데에 붙은 얇은 탭.
+     목록 손잡이는 목록 패널 끝에, 아파트 손잡이는 아파트 패널 끝(지도 왼쪽 끝)에. 16 × 76, 흰 바탕에 옅은 그림자. 마우스를 올리면 조금 진해진다 */
+  .map-web-fold {
+    position: absolute;
+    top: var(--map-web-fold-top, 441px); /* 아파트 패널의 탭 밑줄 높이 (map-web.js watchFoldTop이 잰다). 패널이 없거나 접혀도 같은 높이, 처음에는 로드뷰가 있을 때의 밑줄 441 (2026-10-20 팀장) */
+    left: var(--map-web-list);
+    z-index: 4;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 16px;
+    height: 76px;
+    padding: 0;
+    border: 1px solid var(--color-line);
+    border-left: 0;
+    border-radius: 0 10px 10px 0;
+    background: var(--color-bg);
+    box-shadow: 2px 1px 6px rgba(0, 0, 0, 0.12);
+    color: var(--color-text-sub);
+    font-family: inherit;
+    font-size: 18px;
+    font-weight: var(--font-bold);
+    line-height: 1;
+    cursor: pointer;
+    transform: translateY(-50%);
+    transition: color 0.15s ease, background-color 0.15s ease;
+  }
+
+  .map-web-fold:hover,
+  .map-web-fold:focus-visible {
+    background: var(--color-bg-sub);
+    color: var(--color-text);
+  }
+
+  /* 아파트 손잡이는 아파트 패널이 있을 때만. 접으면 목록 손잡이와 같은 자리에 오므로 그 아래로 비켜 둔다 */
+  .map-web-fold--apt {
+    display: none;
+    left: var(--map-web-panel);
+  }
+
+  html[data-map-web-panel="apartment"] .map-web-fold--apt {
+    display: flex;
+  }
+
+  html[data-map-web-panel="apartment"][data-map-web-apt-fold] .map-web-fold--apt {
+    transform: translateY(calc(-50% + 88px));
+  }
+
+  /* 아파트 패널을 접음: 고른 아파트는 그대로 두고 패널만 숨겨 지도를 넓힌다 */
+  html[data-map-web-panel="apartment"][data-map-web-apt-fold] .map-body {
+    --map-web-apt: 0px;
+  }
+
+  html[data-map-web-apt-fold] #apartment-panel {
+    display: none !important;
+  }
+
+  html[data-map-web-fold][data-map-web-apt-fold] .sheet {
+    border-right: 0;
+  }
+
+  /* ───────── 조건 창 · 지역 창: 목록 칸 자리 (2026-10-20 팀장 결정) ─────────
+     목록과 조건을 같이 볼 일은 없으므로 조건 줄 바로 아래, 목록 칸 자리에 덮어 연다. 목록을 접어 두었어도 목록 칸 폭.
+     웹에서는 움직이지 않고 바로 뜨고 바로 닫힌다 (모바일은 아래에서 올라오는 그대로) */
+  .filter-sheet,
+  .region-sheet {
+    position: fixed;
+    top: var(--map-web-top);
+    right: auto;
+    bottom: 0;
+    left: 0;
+    z-index: 6;
+    width: max(var(--map-web-list-open), var(--map-web-apt)); /* 목록을 접고 아파트 패널만 있으면 그 폭(420)에 맞춰 뒤의 패널이 삐져나오지 않게 (2026-10-20) */
+    height: auto;
+    max-height: none;
+    border-radius: 0;
+    box-shadow: 1px 0 0 var(--color-line);
+    transform: none;
+    animation: none;
+  }
+
+  /* 닫을 때 (filter.js가 붙였다가 정해진 시간 뒤에 숨긴다): 기다리지 않고 바로 숨긴다 */
+  .filter-sheet--closing {
+    display: none;
+  }
+
+  .filter-sheet__handle {
+    display: none;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .filter-sheet,
+    .region-sheet,
+    .filter-sheet--closing {
+      animation: none;
+    }
+  }
+}
+
+/* 로드뷰는 웹 전체 90%(common.css의 zoom 0.9)를 되돌려 100%로 그린다 (2026-10-20).
+   줄인 채로 두면 카카오 로드뷰가 크기를 두 가지(CSS px와 화면 px)로 읽어, 다른 아파트를 누를 때 사진이 옆으로 밀렸다가 바뀌었다.
+   inset: 0이라 상자 크기와 자리는 그대로다 */
+@media (min-width: 1024px) {
+  .apt-roadview__view {
+    zoom: 1.1111;
+  }
+}

@@ -1,0 +1,112 @@
+/* 이름 검색 결과 (P-05 ⑭, ⑮). 담당: 김목산
+   검색 줄(.search-row, map.css) 바로 아래에 뜨는 흰 상자다. 색과 크기는 common.css :root의 이름으로만 쓴다.
+   기준: 확정 목업 v3의 "P-05 ⑭ 검색 결과", "P-05 ⑮ 검색 결과 없음" (docs/mockups/P05_14.png, P05_15.png) */
+
+.search-view {
+  position: absolute;
+  top: 49px; /* 검색 줄(위 9px, 높이 32px) 아래 8px */
+  right: 12px;
+  left: 12px;
+  z-index: 4; /* 지도 위의 칩과 버튼보다 위. 아래 창(3)보다 위, 지역 선택 창(5)보다 아래 */
+  overflow: hidden;
+  border-radius: var(--radius-card);
+  background: var(--color-bg);
+  box-shadow: var(--shadow-float, 0 2px 8px rgba(0, 0, 0, 0.14)); /* 검색 줄과 같은 그림자 (map.css) */
+  color: var(--color-text);
+  font-family: var(--font-family);
+}
+
+.search-view[hidden] {
+  display: none;
+}
+
+/* 결과가 많으면 이 안에서만 위아래로 움직인다. 한 화면에 다섯 줄쯤 */
+.search-view__list {
+  max-height: 320px;
+  margin: 0;
+  padding: 0 16px;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  list-style: none;
+}
+
+.search-view__item + .search-view__item {
+  border-top: 1px solid var(--color-line);
+}
+
+.search-view__row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  width: 100%;
+  min-height: 64px;
+  padding: 10px 0;
+  border: 0;
+  background: transparent;
+  color: inherit;
+  font-family: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+
+.search-view__row:focus-visible {
+  outline: 2px solid var(--color-primary);
+  outline-offset: -2px;
+}
+
+.search-view__text {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+
+.search-view__name {
+  overflow: hidden;
+  font-size: var(--text-item);
+  font-weight: var(--font-bold);
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.search-view__place {
+  color: var(--color-text-sub);
+  font-size: var(--text-help);
+}
+
+/* "위치 없음". 목록 카드의 표시와 같은 모양 */
+.search-view__tag {
+  display: inline-block;
+  margin-left: 6px;
+  padding: 0 6px;
+  border-radius: var(--radius-badge);
+  background: var(--color-bg-sub);
+  color: var(--color-text-sub);
+  font-size: var(--text-badge);
+  vertical-align: middle;
+}
+
+/* 결과 없음, 불러오지 못함 */
+.search-view__box {
+  padding: 14px 16px 16px;
+}
+
+.search-view__title {
+  margin: 0;
+  font-size: var(--text-item);
+  font-weight: var(--font-bold);
+}
+
+.search-view__help {
+  margin: 6px 0 0;
+  color: var(--color-text-sub);
+  font-size: var(--text-help);
+  line-height: var(--line-height);
+}
+
+.search-view__box--error .search-view__title {
+  color: var(--color-error-text);
+  font-size: var(--text-body);
+  font-weight: var(--font-medium);
+}

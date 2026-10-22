@@ -1,0 +1,106 @@
+/* 비슷한 아파트 (FR-APT-17, 3차). 담당: 김목산
+   아파트 정보 탭의 기본 정보 아래에 놓는다. 카드는 list.css의 .list-card를 같이 쓰고, 여기에는 다른 것만 둔다.
+   색과 크기는 common.css :root의 이름으로만 쓴다.
+   기준: 확정 목업 v3의 "C6 아파트 정보 탭: 로드뷰와 3차 내용" (docs/mockups/C6.png).
+   목업은 카드 두 장이지만, 세 장과 '다른 곳 보기'로 정했다 (팀 결정). */
+
+.similar {
+  margin-top: 24px;
+}
+
+.similar__head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.similar__title {
+  margin: 0;
+  font-size: var(--text-body);
+  font-weight: var(--font-bold);
+}
+
+/* '↻ 다른 곳 보기'. 글자 버튼이지만 누르는 영역은 44px */
+.similar__more {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  min-height: var(--touch-size);
+  padding: 0 4px;
+  border: 0;
+  background: none;
+  color: var(--color-primary);
+  font-family: inherit;
+  font-size: var(--text-label);
+  font-weight: var(--font-bold);
+  cursor: pointer;
+}
+
+.similar__more:disabled {
+  color: var(--color-text-sub);
+  cursor: default;
+}
+
+.similar__more:focus-visible,
+.similar__retry:focus-visible {
+  outline: 2px solid var(--color-primary);
+  outline-offset: 2px;
+}
+
+.similar__more-icon {
+  font-size: var(--text-item);
+}
+
+.similar__help {
+  margin: 0 0 10px;
+  color: var(--color-text-sub);
+  font-size: var(--text-help);
+  line-height: var(--line-height);
+}
+
+/* 카드 안 여백. list.css가 여백을 면적 넘기기 칸(.list-card__slide)으로 옮겨 .list-card__body는 0이다.
+   비슷한 아파트 카드는 면적이 하나라 그 칸이 없으므로 여기서 준다 */
+.similar__card .list-card__body {
+  padding: 14px 16px;
+}
+
+.similar__list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+/* 다시 부르는 동안 카드를 흐리게 */
+.similar[aria-busy='true'] .similar__list {
+  opacity: 0.5;
+}
+
+.similar__empty,
+.similar__error-text {
+  margin: 0;
+  color: var(--color-text-sub);
+  font-size: var(--text-body);
+  line-height: var(--line-height);
+}
+
+.similar__error-text {
+  color: var(--color-error-text);
+}
+
+.similar__retry {
+  min-height: var(--touch-size);
+  margin-top: 4px;
+  padding: 0 4px;
+  border: 0;
+  background: none;
+  color: var(--color-primary);
+  font-family: inherit;
+  font-size: var(--text-label);
+  font-weight: var(--font-bold);
+  text-decoration: underline;
+  cursor: pointer;
+}

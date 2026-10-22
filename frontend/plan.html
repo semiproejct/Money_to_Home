@@ -1,0 +1,100 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <!-- 늘 밝은 화면으로 (2026-10-20). 휴대폰 브라우저의 "웹 페이지 어둡게"가 우리 색을 뒤집지 않게 한다 -->
+  <meta name="color-scheme" content="only light">
+  <title>저축 계획 · 머니 to 홈</title>
+  <link rel="stylesheet" href="css/common.css?v=20261021-2">
+  <link rel="stylesheet" href="css/plan.css">
+</head>
+<body>
+  <!-- P-04 저축 계획. Figma "확정 목업 v3"의 P-04, 와이어프레임 설명서 7장.
+       값 두 개를 한 번에 하나씩 묻는다: 월 저축 가능액 → 목표 기간. 기간을 고르면 결과 상자가 나온다. -->
+  <!-- 웹(가로 1200px 이상)에서만 왼쪽 위에 보이는 로고. 안은 js/layout.js가 그린다. 모바일에는 없다. -->
+  <header class="header" id="header"></header>
+  <div class="top-space"></div>
+
+  <nav class="progress" aria-label="입력 단계">
+    <a class="progress__back" href="loan.html" aria-label="이전 화면">‹</a>
+    <div class="progress__bars" aria-hidden="true">
+      <span class="progress__bar progress__bar--done"></span>
+      <span class="progress__bar progress__bar--done"></span>
+      <span class="progress__bar progress__bar--done"></span>
+      <span class="progress__bar"></span>
+    </div>
+    <span class="progress__label">3/4 저축 계획</span>
+  </nav>
+
+  <form id="plan-form" class="form-page form-page--keys" novalidate>
+    <main class="page">
+      <header class="form-page__head">
+        <h1 class="title" id="plan-title">매달 얼마를 모을 수 있나요?</h1>
+        <p class="subtitle" id="plan-subtitle">만 원 단위로 입력합니다.</p>
+      </header>
+      <!-- 다른 화면에서 보내져 왔을 때의 안내. guard.showNotice()가 채운다. -->
+      <p class="notice form-page__notice" id="step-notice" role="status" hidden></p>
+
+      <!-- 월 저축 가능액. 0도 넣을 수 있다. -->
+      <div class="field" id="saving-field">
+        <label class="field__label" for="saving-input">월 저축 가능액</label>
+        <div class="field__row">
+          <input class="field__input" id="saving-input" type="text" inputmode="numeric" enterkeyhint="next" autocomplete="off"
+                 placeholder="예: 100" aria-describedby="saving-help">
+          <span class="field__unit">만 원</span>
+        </div>
+        <div class="field__help" id="saving-help">
+          <span id="saving-message">0도 입력할 수 있습니다.</span>
+          <span class="field__read" id="saving-read"></span>
+        </div>
+      </div>
+
+      <!-- 목표 기간. 넷 중 하나를 고른다. 기본 선택이 없다. 값은 년이고 0은 "지금"이다. -->
+      <fieldset class="term" id="term-field" hidden>
+        <legend class="field__label">목표 기간</legend>
+        <div class="term__options">
+          <label class="term__option"><input type="radio" name="target_years" value="0"><span>지금</span></label>
+          <label class="term__option"><input type="radio" name="target_years" value="3"><span>3년</span></label>
+          <label class="term__option"><input type="radio" name="target_years" value="5"><span>5년</span></label>
+          <label class="term__option"><input type="radio" name="target_years" value="10"><span>10년</span></label>
+        </div>
+      </fieldset>
+
+      <!-- 결과. 서버가 계산한 값을 보여 주기만 한다 (A-04). -->
+      <section class="result" id="result" aria-live="polite" hidden>
+        <p class="result__label" id="result-label"></p>
+        <p class="result__amount" id="result-own"></p>
+        <dl class="result__rows">
+          <div class="result__row">
+            <dt>현재 보유자산</dt>
+            <dd id="result-assets"></dd>
+          </div>
+          <div class="result__row">
+            <dt>누적 저축액 <span class="result__formula" id="result-formula"></span></dt>
+            <dd id="result-saving"></dd>
+          </div>
+        </dl>
+      </section>
+      <p class="result-note" id="result-note" hidden></p>
+    </main>
+
+    <div class="bottom-action">
+      <p class="snackbar" id="plan-error" role="alert" hidden></p>
+      <p class="bottom-action__hint" id="plan-hint" hidden>목표 기간을 고르면 결과가 나옵니다.</p>
+      <button type="submit" class="button button--primary" id="plan-submit" disabled>확인</button>
+    </div>
+  </form>
+
+  <!-- 공통 JavaScript. 모든 화면이 이 순서로 먼저 불러 쓴다. 그 아래에 화면의 파일을 둔다. -->
+  <script src="js/api.js"></script>
+  <script src="js/store.js"></script>
+  <script src="js/format.js?v=20261019-2"></script>
+  <script src="js/guard.js"></script>
+  <script src="js/layout.js?v=20261019-1"></script>
+  <script src="js/account.js?v=20261021-mp1"></script>
+  <script src="js/form-flow.js?v=20261021-2"></script>
+  <script src="js/plan.js?v=20261021-2"></script>
+  <script src="js/scrollbar.js?v=20261020-6"></script>
+</body>
+</html>

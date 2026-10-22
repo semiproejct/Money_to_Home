@@ -1,0 +1,747 @@
+/* 모든 화면이 함께 쓰는 모양. 색, 글자, 헤더, 진행 바, 버튼, 입력란, 구분 표시.
+
+   값은 Figma 파일 "money-to-home-mockup"의 섹션 "확정 목업 v3"에서 가져왔다. 이름도 Figma의 변수 이름과 같다.
+     Figma  color/primary   →  여기  --color-primary
+
+   화면마다의 모양은 css 폴더에 그 화면 이름으로 파일을 따로 만든다. 예: profile.css
+   색과 글자 크기는 아래 :root의 이름으로만 쓴다. 화면 파일에 값을 직접 적지 않는다. */
+
+@import url('https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700&display=swap');
+
+:root {
+  color-scheme: only light; /* 늘 밝은 화면 (2026-10-20). 브라우저가 강제로 어둡게 바꾸지 않게. 각 화면의 <meta name="color-scheme">와 같다 */
+  /* 바탕과 선 */
+  --color-bg: #ffffff;
+  --color-bg-sub: #f2f2f7;
+  --color-line: #e5e5ea;
+  --color-line-strong: #c7c7cc;
+  --color-dim: #000000;
+
+  /* 글자 */
+  --color-text: #1c1c1e;
+  --color-text-sub: #636366;
+  --color-text-hint: #aeaeb2;
+
+  /* 주조색 */
+  --color-primary: #007aff;
+  --color-primary-soft: #eaf3ff;
+  --color-on-primary: #ffffff;
+
+  /* 로고의 금색 (동전). 스플래시의 "to"에도 쓴다 */
+  --color-brand-gold: #ffc23d;
+
+  /* 꺼진 버튼 */
+  --color-disabled: #e5e5ea;
+  --color-on-disabled: #aeaeb2;
+
+  /* 오류 */
+  --color-error: #ff3b30;
+  --color-error-text: #d70015;
+  --color-error-soft: #fff1f0;
+
+  /* 주의. 막지는 않지만 알아야 하는 안내 (대상 주택 가격 상한 초과 등). Figma 목업 P-06 ⑲의 색 */
+  --color-warning: #ff9500;
+  --color-warning-text: #b86200;
+  --color-warning-soft: #fff4e5;
+
+  /* 구분. 팔레트 F 라임 (Figma의 color/now, color/lime/*).
+     지금 가능은 파랑, 기간 내 가능은 라임, 자금 부족은 빨강.
+     띠와 배지의 바탕은 이름 그대로의 색, 흰 바탕 위의 글자는 -text 색, 옅은 바탕은 -soft 색을 쓴다. */
+  --color-now: #007aff;
+  --color-now-text: #116dd1;
+  --color-within: #94c93d;
+  --color-within-text: #4a7317;
+  --color-within-soft: #f2f9e8;
+  --color-lack: #ff6b6b;
+  --color-lack-text: #c92a2a;
+  --color-lack-soft: #ffeded;
+
+  /* 지도 */
+  --color-map: #eef1f4;
+  --color-map-block: #e4e8ec;
+  --color-map-park: #dcefd8;
+  --color-map-water: #cfe3f7;
+  --color-map-road: #ffffff;
+  --color-marker-price: #414141;
+  --color-keypad: #d1d4da;
+
+  /* 글꼴 */
+  --font-family: 'Noto Sans KR', 'Malgun Gothic', system-ui, sans-serif;
+  --font-regular: 400;
+  --font-medium: 500;
+  --font-bold: 700;
+
+  /* 글자 크기 */
+  --text-splash: 38px; /* 스플래시의 서비스 이름 */
+  --text-display: 28px; /* 시작 화면의 큰 제목. 줄 높이 38px */
+  --text-value: 26px; /* 입력란의 값 */
+  --text-title: 24px; /* 입력 화면의 제목. 줄 높이 34px */
+  --text-amount: 22px; /* 강조하는 금액 */
+  --text-button: 17px; /* 버튼, 헤더의 서비스 이름, 입력란의 단위 */
+  --text-item: 16px; /* 목록의 항목 이름 */
+  --text-body: 15px; /* 본문. 줄 높이 22px */
+  --text-label: 14px; /* 입력란의 이름, 칩 */
+  --text-help: 13px; /* 설명 줄, 안내. 줄 높이 19 ~ 20px */
+  --text-badge: 12px; /* 배지 */
+  --line-height: 1.45;
+
+  /* 크기 */
+  --top-space: 52px; /* 모바일에는 헤더가 없다. 입력 화면은 이 높이만큼 위를 흰 여백으로 둔다 */
+  --condition-bar-height: 40px; /* 지도 화면 맨 위의 내 조건 줄 */
+  --progress-height: 44px;
+  --touch-size: 44px; /* 누르는 영역은 가로세로 44픽셀 이상 */
+  --button-height: 56px;
+  --input-height: 50px;
+  --page-width: 390px;
+  --page-padding: 20px;
+
+  /* 웹 (가로 1200px 이상). 입력 화면은 가운데 흰 기둥 하나, 양옆은 회색 바탕이다 (2026-10-19 팀장 결정) */
+  --color-web-bg: #f7f7f7;
+  --header-height: 64px;
+  --web-page-width: 560px; /* 일반적인 웹 회원가입·입력 화면의 폭. 안쪽 내용의 폭은 480px */
+  --web-page-padding: 40px;
+
+  /* 모서리 */
+  --radius-button: 14px;
+  --radius-card: 12px;
+  --radius-badge: 6px;
+  --radius-pill: 999px;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+/* hidden을 준 요소는 display를 따로 줬어도 보이지 않는다. 단계마다 입력란을 숨기고 보일 때 쓴다. */
+[hidden] {
+  display: none !important;
+}
+
+body {
+  margin: 0;
+  color: var(--color-text);
+  background: var(--color-bg);
+  font-family: var(--font-family);
+  font-size: var(--text-body);
+  font-weight: var(--font-regular);
+  line-height: var(--line-height);
+  word-break: keep-all;
+  /* 선택과 누름 표시 (2026-10-19). 앱처럼 화면 부품(버튼, 칩, 탭, 지도, 말풍선, 손잡이, 제목·라벨)은 글자가 선택되지 않고,
+     휴대폰에서 누를 때 파랗게 덮이는 강조와 길게 누를 때의 메뉴도 뜨지 않는다.
+     입력란과 사용자가 복사할 만한 내용은 아래 "선택할 수 있는 것"에서 다시 연다 */
+  -webkit-user-select: none;
+  user-select: none;
+  -webkit-tap-highlight-color: transparent;
+  -webkit-touch-callout: none;
+}
+
+/* 그림은 끌어 옮기지 않는다 (지도 위 아이콘, 로고) */
+img,
+svg {
+  -webkit-user-drag: none;
+}
+
+/* ───────── 선택할 수 있는 것 ─────────
+   입력란, 그리고 복사할 만한 내용: 아파트 이름, 정보 줄의 값(주소, 금액, 면적…), 시나리오의 금액과 식,
+   입력 요약 · 시작 화면의 저장한 값, 저장한 결과의 이름과 결과, 안내 문구, 오류 문구, 용어 설명.
+   길게 눌러 복사하는 메뉴도 여기서는 뜬다 */
+input,
+textarea,
+select,
+[contenteditable="true"],
+.apt__name,
+.apt-info__value,
+.scenario__gap,
+.scenario__formula,
+.scenario__need-value,
+.scenario__growth-help,
+.summary-card__row dd,
+.saved-box__row dd,
+.saved__card-name,
+.saved__card-result,
+.saved__card-conditions,
+.notice,
+.field__error,
+.list-card__name,
+.glossary__bubble,
+.info-tip__text,
+.list__tip,
+/* 10-19에 더한 화면: 주변 시설의 곳 이름과 거리, 대출 "자세히"의 상품명 · 조건 · 자격 조건,
+   시나리오 그래프 위 문장과 출처, 공유받은 화면의 이름 · 지역 · 정보 줄의 값 */
+.apt-near__value,
+.sheet__title,
+.sheet__row dd,
+.sheet__list,
+.scenario-chart__say,
+.scenario-chart__src,
+.share-page__name,
+.share-page__place,
+.share-page__value,
+.share-page__missing-text {
+  -webkit-user-select: text;
+  user-select: text;
+  -webkit-touch-callout: default;
+}
+
+/* 단, 누르는 줄 안의 이름은 누르기가 우선이다 (목록·비슷한 아파트의 카드는 버튼이라 선택하지 않는다).
+   선택할 수 있는 글자 옆의 복사 · 공유 아이콘(share.js)도 글자를 끌어 고를 때 같이 잡히지 않게 한다.
+   공유 창 같은 <dialog>는 열리면 맨 위층에 올라가 body의 설정을 물려받지 않으므로 여기서 다시 막는다.
+   공유 창의 링크 칸(.share__link)은 [링크 복사]로만 복사하고, 복사가 안 되는 브라우저에서만 고를 수 있다 (share.css) */
+button .list-card__name,
+.share-action,
+dialog {
+  -webkit-user-select: none;
+  user-select: none;
+  -webkit-tap-highlight-color: transparent;
+  -webkit-touch-callout: none;
+}
+
+/* 띄어쓰기에서만 줄을 바꾸는 낱말 (format.keepWords). 아파트 이름처럼 하이픈에서 꺾이면 안 되는 글자 */
+.keep-word {
+  display: inline-block;
+  max-width: 100%;
+}
+
+/* ───────── 위 여백 ─────────
+   모바일에는 헤더가 없다. 입력 화면(P-01 ~ P-04, P-07, P-08)은 body 맨 위에 이 요소를 둔다.
+   지도 화면은 이것 대신 내 조건 줄을 둔다. */
+.top-space {
+  height: var(--top-space);
+  background: var(--color-bg);
+}
+
+/* ───────── 진행 바 (P-02 ~ P-04) ───────── */
+.progress {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  height: var(--progress-height);
+  padding: 0 var(--page-padding) 0 8px;
+  background: var(--color-bg);
+}
+
+.progress__back {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: var(--touch-size);
+  height: var(--touch-size);
+  border: 0;
+  background: transparent;
+  color: var(--color-text);
+  font-family: inherit;
+  font-size: 26px;
+  text-decoration: none;
+  cursor: pointer;
+}
+
+.progress__bars {
+  display: flex;
+  flex: 1;
+  gap: 4px;
+}
+
+.progress__bar {
+  flex: 1;
+  height: 4px;
+  border-radius: 2px;
+  background: var(--color-line);
+}
+
+.progress__bar--done {
+  background: var(--color-primary);
+}
+
+.progress__label {
+  color: var(--color-text-sub);
+  font-size: var(--text-help);
+  font-weight: var(--font-medium);
+  white-space: nowrap;
+}
+
+/* ───────── 본문 ───────── */
+.page {
+  max-width: var(--page-width);
+  margin: 0 auto;
+  padding: 24px var(--page-padding) 0;
+}
+
+.title {
+  margin: 0;
+  font-size: var(--text-title);
+  font-weight: var(--font-bold);
+  line-height: 34px;
+}
+
+.title--display {
+  font-size: var(--text-display);
+  line-height: 38px;
+}
+
+.subtitle {
+  margin: 6px 0 0;
+  color: var(--color-text-sub);
+  font-size: var(--text-body);
+  line-height: 22px;
+}
+
+/* 안내 문구 상자 */
+.notice {
+  margin: 0;
+  padding: 14px 16px;
+  border-radius: var(--radius-card);
+  background: var(--color-bg-sub);
+  color: var(--color-text-sub);
+  font-size: var(--text-help);
+  line-height: 20px;
+}
+
+.notice--error {
+  border: 1px solid var(--color-error);
+  background: var(--color-error-soft);
+  color: var(--color-error-text);
+}
+
+/* ───────── 버튼 ───────── */
+.button {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  height: var(--button-height);
+  padding: 0 16px;
+  border: 0;
+  border-radius: var(--radius-button);
+  background: var(--color-bg-sub);
+  color: var(--color-text);
+  font-family: inherit;
+  font-size: var(--text-button);
+  font-weight: var(--font-bold);
+  text-decoration: none;
+  cursor: pointer;
+}
+
+.button--primary {
+  background: var(--color-primary);
+  color: var(--color-on-primary);
+}
+
+.button:disabled,
+.button--disabled {
+  background: var(--color-disabled);
+  color: var(--color-on-disabled);
+  cursor: not-allowed;
+}
+
+/* 밑줄 친 글자 버튼. "처음부터 다시 입력", "새로 입력하기" */
+.link-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  height: var(--touch-size);
+  padding: 0 8px;
+  border: 0;
+  background: transparent;
+  color: var(--color-text);
+  font-family: inherit;
+  font-size: var(--text-body);
+  font-weight: var(--font-medium);
+  text-decoration: underline;
+  cursor: pointer;
+}
+
+/* 버튼 위의 검은 알림. "입력한 정보를 저장하지 못했습니다." 같은 한 줄 안내 */
+.snackbar {
+  margin: 0 0 12px;
+  padding: 12px 16px;
+  border-radius: var(--radius-card);
+  background: var(--color-text);
+  color: var(--color-bg);
+  font-size: var(--text-help);
+  line-height: 20px;
+}
+
+/* 화면 아래에 붙는 버튼 영역 */
+.bottom-action {
+  position: sticky;
+  bottom: 0;
+  max-width: var(--page-width);
+  margin: 0 auto;
+  padding: 12px var(--page-padding) 20px;
+  background: var(--color-bg);
+}
+
+/* ───────── 한 번에 하나씩 묻는 입력 화면의 틀 (P-02 ~ P-04) ─────────
+   <form class="form-page"> 안에 <main class="page">와 <div class="bottom-action">을 둔다.
+   버튼이 화면 아래에 붙도록 본문이 남은 높이를 채운다. */
+.form-page {
+  display: flex;
+  flex-direction: column;
+  /* --app-height: 키보드가 없을 때의 화면 높이 (js/form-flow.js). 키보드가 떠서 화면이 줄어도 그대로라 버튼이 따라 올라오지 않는다 */
+  min-height: calc(var(--app-height, 100vh) / var(--page-zoom, 1) - var(--top-space) - var(--progress-height));
+}
+
+.form-page .page {
+  flex: 1;
+  width: 100%;
+  overflow-x: clip; /* 밀려 들어오는 입력란 때문에 가로 스크롤이 생기지 않게 한다 */
+}
+
+.form-page .bottom-action {
+  width: 100%;
+}
+
+/* 휴대폰·태블릿(1199px 이하): 글자를 넣는 화면의 버튼은 키보드 위로 떠오르지 않고 본문 맨 아래에 둔다 (2026-10-21 팀장 요청).
+   갤럭시는 키보드가 뜨면 화면이 줄어 화면 아래에 붙은 버튼이 입력란을 덮었다. 본문이 짧으면 화면 맨 아래, 길면 내려서 본다.
+   글자를 넣는 화면(form-page--keys: 재무정보, 저축 계획, 로그인, 회원가입, 내 정보)만. 고르기만 하는 화면은 버튼이 늘 보이게 그대로 둔다 */
+@media (max-width: 1199px) {
+  .form-page--keys .bottom-action {
+    position: static;
+  }
+}
+
+/* 제목과 설명 */
+.form-page__head {
+  padding-bottom: 28px;
+}
+
+/* 제목의 줄을 나눌 곳은 제목 글에 줄바꿈 문자로 적는다 (profile.js의 TITLES). */
+.form-page__head .title {
+  white-space: pre-line;
+}
+
+/* 다른 화면에서 보내져 왔을 때의 한 줄 안내. 제목 아래, 입력란 위에 둔다. */
+.form-page__notice {
+  margin-bottom: 24px;
+}
+
+/* 입력을 마치면 다음 입력란이 오른쪽에서 왼쪽으로 밀려 들어온다. 나타나는 요소에 이 이름을 붙인다. */
+.field--enter {
+  animation: field-enter 0.35s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+@keyframes field-enter {
+  from {
+    opacity: 0;
+    transform: translateX(48px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+/* 확인 단계로 바뀔 때 제목과 값들이 한 번 뛰어오른다. 화면이 바뀐 것을 알아보게 한다. */
+.jump {
+  animation: jump 0.5s cubic-bezier(0.28, 0.84, 0.42, 1) both;
+}
+
+@keyframes jump {
+  0% {
+    transform: translateY(0);
+  }
+  35% {
+    transform: translateY(-14px);
+  }
+  65% {
+    transform: translateY(0);
+  }
+  82% {
+    transform: translateY(-4px);
+  }
+  100% {
+    transform: translateY(0);
+  }
+}
+
+/* 움직임을 줄이도록 설정한 사용자에게는 바로 보여 준다. */
+@media (prefers-reduced-motion: reduce) {
+  .field--enter,
+  .jump {
+    animation: none;
+  }
+}
+
+/* ───────── 입력란 ─────────
+   이름, 값(밑줄), 설명 줄의 세 줄이다. 오류 문구는 설명 줄 자리에 넣어 화면이 밀리지 않게 한다. */
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding-bottom: 22px;
+}
+
+.field__label {
+  color: var(--color-text-sub);
+  font-size: var(--text-label);
+  font-weight: var(--font-medium);
+}
+
+.field__row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  height: var(--input-height);
+  border-bottom: 1px solid var(--color-line);
+}
+
+/* 입력 중인 칸은 밑줄이 파랗고 두껍다. 높이가 바뀌지 않게 그림자로 1px을 더한다. */
+.field__row:focus-within {
+  border-bottom-color: var(--color-primary);
+  box-shadow: 0 1px 0 var(--color-primary);
+}
+
+.field__input {
+  flex: 1;
+  min-width: 0;
+  height: 100%;
+  padding: 0;
+  border: 0;
+  outline: 0;
+  background: transparent;
+  color: var(--color-text);
+  font-family: inherit;
+  font-size: var(--text-value);
+  font-weight: var(--font-bold);
+}
+
+.field__input::placeholder {
+  color: var(--color-text-hint);
+}
+
+.field__unit {
+  color: var(--color-text-sub);
+  font-size: var(--text-button);
+  white-space: nowrap;
+}
+
+.field__help {
+  display: flex;
+  justify-content: space-between;
+  gap: 8px;
+  min-height: 19px;
+  color: var(--color-text-sub);
+  font-size: var(--text-help);
+  line-height: 19px;
+}
+
+/* 설명 줄 오른쪽의 읽어 주는 금액. "3,600만 원" */
+.field__read {
+  color: var(--color-text);
+  font-weight: var(--font-bold);
+  white-space: nowrap;
+}
+
+.field--error .field__row {
+  border-bottom-color: var(--color-error);
+}
+
+.field--error .field__help {
+  color: var(--color-error-text);
+}
+
+/* ───────── 구분 ───────── */
+/* 배지. "지금 가능", "기간 내 가능", "자금 부족" */
+.badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  height: 24px;
+  padding: 0 8px;
+  border-radius: var(--radius-badge);
+  font-size: var(--text-badge);
+  font-weight: var(--font-bold);
+  line-height: 18px;
+  white-space: nowrap;
+}
+
+/* 개수 칩. "지금 5", "기간 내 4", "부족 14" */
+.chip {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  height: 40px;
+  padding: 0 14px;
+  border: 0;
+  border-radius: var(--radius-pill);
+  font-family: inherit;
+  font-size: var(--text-label);
+  font-weight: var(--font-bold);
+  line-height: 18px;
+  white-space: nowrap;
+}
+
+.badge--now,
+.chip--now {
+  background: var(--color-now);
+  color: var(--color-on-primary);
+}
+
+.badge--within,
+.chip--within {
+  background: var(--color-within-soft);
+  color: var(--color-within-text);
+}
+
+.badge--lack,
+.chip--lack {
+  background: var(--color-lack-soft);
+  color: var(--color-lack-text);
+}
+
+/* 금액 글자. "여유 2,000만 원", "부족 2,500만 원" */
+.amount {
+  font-size: var(--text-amount);
+  font-weight: var(--font-bold);
+}
+
+.amount--now {
+  color: var(--color-now-text);
+}
+
+.amount--within {
+  color: var(--color-within-text);
+}
+
+.amount--lack {
+  color: var(--color-lack-text);
+}
+
+/* ───────── 웹 배치 (가로 1200px 이상) ─────────
+   모바일에는 헤더가 없다 (확정 목업 v3). 웹에서도 헤더 줄은 두지 않고, 로고만 왼쪽 위 회색 바탕에 띄운다 (2026-10-19 팀장 결정).
+   로고 자리(<header class="header">)가 있는 화면(입력 화면 여덟 개)만 웹 배치를 쓴다. 지도 화면과 저장한 결과 화면은 아직 바꾸지 않는다.
+   입력 화면은 모바일 화면을 넓힌 가운데 흰 기둥 하나로 보여 주고, 양옆은 회색 바탕으로 채운다.
+   1199px 이하의 모양은 바꾸지 않는다. */
+.header {
+  display: none;
+}
+
+@media (min-width: 1200px) {
+  /* 바탕: 양옆은 회색, 가운데는 테두리 선이 있는 흰 기둥. 내용이 길거나 짧아도 위아래 끝까지 이어진다.
+     기둥 안의 내용은 위에서 64px(--header-height) 아래부터 시작한다. 로고와 같은 높이의 빈 줄이다 */
+  body:has(> .header) {
+    --page-width: var(--web-page-width);
+    --page-padding: var(--web-page-padding);
+    --top-space: var(--header-height); /* 높이 계산에서 위 여백 대신 이 빈 줄의 높이를 뺀다 */
+    --column-left: calc(50% - var(--page-width) / 2);
+    --column-right: calc(50% + var(--page-width) / 2);
+    padding-top: var(--header-height);
+    background: linear-gradient(
+      to right,
+      var(--color-web-bg) calc(var(--column-left) - 1px),
+      var(--color-line) 0 var(--column-left),
+      var(--color-bg) 0 var(--column-right),
+      var(--color-line) 0 calc(var(--column-right) + 1px),
+      var(--color-web-bg) 0
+    );
+  }
+
+  /* 위 여백(52px) 자리는 위의 빈 줄이 대신한다 */
+  body:has(> .header) .top-space {
+    display: none;
+  }
+
+  /* 진행 바도 기둥 폭 안에 둔다 */
+  body:has(> .header) .progress {
+    max-width: var(--page-width);
+    margin: 0 auto;
+  }
+
+  /* 왼쪽 위에 떠 있는 로고. 바탕과 선이 없고, 스크롤해도 그 자리에 있다 */
+  .header {
+    position: fixed;
+    top: 0;
+    left: 0;
+    z-index: 9; /* 내용보다 위, 아래에서 올라오는 창의 어두운 바탕(10)보다 아래 */
+    display: flex;
+    align-items: center;
+    height: var(--header-height);
+    padding: 0 32px 0 132px; /* 화면 끝에서 조금 띄운다 (2026-10-19 팀장: 100px 더 오른쪽) */
+  }
+
+  /* 로고와 이름은 줄 가운데보다 3px 아래에 둔다 (눈으로 보기에 가운데) */
+  .header__home {
+    position: relative;
+    top: 3px;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    min-height: var(--touch-size);
+    color: var(--color-text);
+    font-size: var(--text-amount);
+    font-weight: var(--font-bold);
+    letter-spacing: -0.02em;
+    text-decoration: none;
+  }
+
+  /* 로고는 글자 높이와 비슷하게 */
+  .header__logo {
+    display: block;
+    width: 28px;
+    height: 28px;
+  }
+
+  /* "머니", "to", "홈"의 바닥이 한 줄에 맞는다 (글자의 바닥선에 맞춤) */
+  .header__name {
+    line-height: 1;
+    white-space: nowrap;
+  }
+
+  .header__to {
+    margin: 0 2px;
+    color: var(--color-brand-gold); /* 로고 동전과 같은 금색 */
+    font-size: var(--text-button);
+    vertical-align: baseline;
+  }
+}
+
+/* 웹(1024px 이상)의 지도 화면(map.html)만 90%로 그린다 (2026-10-20 팀장: 브라우저 90%로 볼 때가 가장 깔끔했다).
+   글자 · 여백 · 지도까지 한꺼번에 줄어든다. 100vh를 쓰는 곳은 calc(100vh / var(--page-zoom))로 화면 높이를 다 채운다.
+   시작 · 입력 · 로그인 · 회원가입 · 저장한 결과 같은 다른 화면과 모바일은 100% 그대로 (2026-10-21 되돌림) */
+:root {
+  --page-zoom: 1;
+}
+
+@media (min-width: 1024px) {
+  :root:has(> body.map-body) {
+    --page-zoom: 0.9;
+    zoom: 0.9;
+  }
+}
+
+/* 스크롤바 (2026-10-20 팀장): 브라우저 스크롤바는 자리를 차지하므로 숨긴다.
+   대신 js/scrollbar.js가 스크롤하는 상자의 오른쪽 가장자리 위에 얇은 반투명 손잡이를 겹쳐 띄우고, 5초 동안 가만히 있으면 사라지게 한다 */
+* {
+  scrollbar-width: none;
+}
+
+*::-webkit-scrollbar {
+  display: none;
+}
+
+.scrollbar-thumb {
+  position: fixed;
+  z-index: 2147483647;
+  width: 5px;
+  border-radius: 999px;
+  background: rgba(0, 0, 0, 0.22);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.3s ease, width 0.15s ease;
+}
+
+.scrollbar-thumb--on {
+  opacity: 1;
+  pointer-events: auto;
+  cursor: default;
+}
+
+.scrollbar-thumb:hover,
+.scrollbar-thumb--drag {
+  width: 7px;
+  background: rgba(0, 0, 0, 0.34);
+}
+
+.scrollbar-thumb--gone {
+  transition: none; /* 부모가 접혀 상자가 사라지면 손잡이도 바로 사라진다 */
+}

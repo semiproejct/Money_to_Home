@@ -1,0 +1,24 @@
+# 머니 to 홈에서 쓰는 라이브러리. 네 명이 같은 버전을 쓴다.
+# 설치: 가상 환경을 켠 뒤  pip install -r requirements.txt
+
+# 서버
+fastapi==0.143.0
+uvicorn[standard]==0.54.0
+
+# DB (MariaDB 11.4). SQLAlchemy로 다루고, 접속은 PyMySQL이 한다.
+SQLAlchemy==2.1.4
+PyMySQL==1.2.3
+
+# 회원 비밀번호 해시 (2차)
+bcrypt==5.0.0
+
+# 설정 (.env 읽기)
+python-dotenv==1.2.4
+
+# 자료 수집과 정리
+pandas==3.0.6
+requests==2.34.2
+
+# 테스트
+pytest==9.1.1
+httpx==0.28.1

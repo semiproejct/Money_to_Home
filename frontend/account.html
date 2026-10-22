@@ -1,0 +1,145 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <!-- 늘 밝은 화면으로 (2026-10-20). 휴대폰 브라우저의 "웹 페이지 어둡게"가 우리 색을 뒤집지 않게 한다 -->
+  <meta name="color-scheme" content="only light">
+  <title>계정 · 머니 to 홈</title>
+  <link rel="stylesheet" href="css/common.css?v=20261021-2">
+  <link rel="stylesheet" href="css/auth.css?v=20261020-90">
+  <link rel="stylesheet" href="css/account.css">
+</head>
+<body data-page="account">
+  <!-- P-10 비밀번호 변경, P-11 회원 탈퇴 (3차). 담당: 김목산. 와이어프레임 C4, C5 (docs/mockups/C4.png, C5.png).
+       탈퇴는 확인 모달에서 한 번 더 눌러야 한다.
+       한 파일에 두 화면을 두고 주소의 # 으로 고른다: account.html#password, account.html#withdraw (없으면 비밀번호 변경).
+       로그인해야 쓸 수 있다. 로그인하지 않았으면 로그인 화면으로 보낸다. 모양은 로그인·회원가입 화면(auth.css)과 같다. -->
+  <!-- 웹(가로 1200px 이상)에서만 왼쪽 위에 보이는 로고. 안은 js/layout.js가 그린다. 모바일에는 없다. -->
+  <header class="header" id="header"></header>
+  <div class="top-space"></div>
+
+  <nav class="progress auth-nav" aria-label="뒤로">
+    <a class="progress__back" href="index.html" id="auth-back" aria-label="이전 화면">‹</a>
+  </nav>
+
+  <!-- P-10 비밀번호 변경 (C4) -->
+  <form id="password-form" class="form-page form-page--keys auth" novalidate hidden>
+    <main class="page">
+      <header class="form-page__head auth__head">
+        <h1 class="title">비밀번호를 바꿉니다</h1>
+      </header>
+
+      <div class="field" id="password-current-field">
+        <label class="field__label" for="password-current">지금 비밀번호</label>
+        <div class="field__row">
+          <input class="field__input auth__input" id="password-current" name="current_password" type="password"
+                 autocomplete="current-password" aria-describedby="password-current-message">
+        </div>
+        <p class="auth__message" id="password-current-message" role="alert"></p>
+      </div>
+
+      <div class="field" id="password-new-field">
+        <label class="field__label" for="password-new">새 비밀번호</label>
+        <div class="field__row">
+          <input class="field__input auth__input" id="password-new" name="new_password" type="password"
+                 autocomplete="new-password" aria-describedby="password-new-rules password-new-message">
+        </div>
+        <ul class="auth__rules" id="password-new-rules">
+          <li class="auth__rule" data-rule="length">8자 이상</li>
+          <li class="auth__rule" data-rule="letter">영문 포함</li>
+          <li class="auth__rule" data-rule="digit">숫자 포함</li>
+        </ul>
+        <p class="auth__message" id="password-new-message" role="alert"></p>
+      </div>
+
+      <div class="field" id="password-confirm-field">
+        <label class="field__label" for="password-confirm">새 비밀번호 확인</label>
+        <div class="field__row">
+          <input class="field__input auth__input" id="password-confirm" name="new_password_confirm" type="password"
+                 autocomplete="new-password" aria-describedby="password-confirm-message">
+        </div>
+        <p class="auth__message" id="password-confirm-message" role="alert"></p>
+      </div>
+    </main>
+
+    <div class="bottom-action">
+      <p class="snackbar" id="password-error" role="alert" hidden></p>
+      <button type="submit" class="button button--primary" id="password-submit" disabled>바꾸기</button>
+    </div>
+  </form>
+
+  <!-- 비밀번호를 바꾼 뒤. 목업에 없어 가입 완료 화면(P-08 ⑦)을 따랐다 -->
+  <section class="form-page auth auth-done" id="password-done" hidden>
+    <main class="page">
+      <div class="auth-done__mark" aria-hidden="true"></div>
+      <h1 class="title">비밀번호를 바꿨습니다</h1>
+      <p class="subtitle">다음 로그인부터 새 비밀번호를 쓰면 됩니다.</p>
+    </main>
+    <div class="bottom-action">
+      <a class="button button--primary" id="password-home" href="index.html">시작 화면으로</a>
+    </div>
+  </section>
+
+  <!-- P-11 회원 탈퇴 (C5) -->
+  <form id="withdraw-form" class="form-page form-page--keys auth" novalidate hidden>
+    <main class="page">
+      <header class="form-page__head auth__head">
+        <h1 class="title">탈퇴하면 저장한 정보가 모두 지워집니다</h1>
+      </header>
+
+      <div class="account__warning">
+        <p class="account__warning-title">지워지는 정보</p>
+        <ul class="account__warning-list">
+          <li>재무정보, 대출 선택, 저축 계획</li>
+          <li>저장한 결과</li>
+          <li>아이디와 비밀번호</li>
+        </ul>
+        <p class="account__warning-note">지운 뒤에는 되돌릴 수 없습니다.</p>
+      </div>
+
+      <div class="field account__withdraw-field" id="withdraw-password-field">
+        <label class="field__label" for="withdraw-password">비밀번호를 한 번 더 입력해 주세요</label>
+        <div class="field__row">
+          <input class="field__input auth__input" id="withdraw-password" name="password" type="password"
+                 autocomplete="current-password" aria-describedby="withdraw-password-message">
+        </div>
+        <p class="auth__message" id="withdraw-password-message" role="alert"></p>
+      </div>
+    </main>
+
+    <div class="bottom-action">
+      <p class="snackbar" id="withdraw-error" role="alert" hidden></p>
+      <button type="submit" class="button button--primary" id="withdraw-submit" disabled>탈퇴하기</button>
+      <p class="auth__links">
+        <a class="auth__link" href="index.html" id="withdraw-cancel">취소</a>
+      </p>
+    </div>
+  </form>
+
+  <!-- 탈퇴 확인 모달. '탈퇴하기'를 누르면 뜬다. 여기서 한 번 더 '탈퇴하기'를 눌러야 서버에 보낸다 (2026-10-15 팀장과 정함) -->
+  <dialog class="account-confirm" id="withdraw-confirm" aria-labelledby="withdraw-confirm-title" aria-describedby="withdraw-confirm-text">
+    <div class="account-confirm__box">
+      <h2 class="account-confirm__title" id="withdraw-confirm-title">정말 탈퇴할까요?</h2>
+      <p class="account-confirm__text" id="withdraw-confirm-text">재무정보, 저축 계획, 저장한 결과와 아이디가 모두 지워집니다. 지운 뒤에는 되돌릴 수 없습니다.</p>
+      <div class="account-confirm__buttons">
+        <button type="button" class="button account-confirm__cancel" id="withdraw-confirm-cancel">취소</button>
+        <button type="button" class="button account-confirm__ok" id="withdraw-confirm-ok">탈퇴하기</button>
+      </div>
+    </div>
+  </dialog>
+
+  <!-- 공통 JavaScript. 모든 화면이 이 순서로 먼저 불러 쓴다. 그 아래에 화면의 파일을 둔다.
+       auth.js는 비밀번호 규칙과 표시 함수를 같이 쓰려고 부른다 (body의 data-page가 login, signup이 아니면 화면을 그리지 않는다). -->
+  <script src="js/api.js"></script>
+  <script src="js/store.js"></script>
+  <script src="js/format.js?v=20261019-2"></script>
+  <script src="js/guard.js"></script>
+  <script src="js/layout.js?v=20261019-1"></script>
+  <script src="js/account.js?v=20261021-mp1"></script>
+  <script src="js/form-flow.js?v=20261021-2"></script>
+  <script src="js/auth.js?v=20261021-2"></script>
+  <script src="js/account-page.js?v=20261021-1"></script>
+  <script src="js/scrollbar.js?v=20261020-6"></script>
+</body>
+</html>

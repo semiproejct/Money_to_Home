@@ -1,0 +1,62 @@
+/* P-02 재무정보 화면에만 쓰는 모양. 입력란, 버튼, 진행 바, 한 번에 하나씩 묻는 틀(.form-page)은 common.css에 있다. */
+
+/* 주민등록번호 앞 7자리: 앞 6자리, 줄표, 뒤 첫째 자리, 점 여섯 개 */
+.rrn {
+  justify-content: flex-start;
+  gap: 10px;
+}
+
+.rrn__front {
+  flex: 0 0 auto;
+  width: 118px;
+  letter-spacing: 1px;
+}
+
+/* 자리 글자("생년월일 6자리")는 값보다 작게 */
+.rrn__front::placeholder {
+  font-size: var(--text-button);
+  font-weight: var(--font-regular);
+  letter-spacing: 0;
+}
+
+.rrn__dash {
+  color: var(--color-text-sub);
+  font-size: var(--text-value);
+}
+
+.rrn__back {
+  flex: 0 0 auto;
+  width: 1.2em;
+  text-align: center;
+}
+
+/* 받지 않는 나머지 여섯 자리. 점으로만 보여 준다. */
+.rrn__dots {
+  display: flex;
+  gap: 6px;
+}
+
+.rrn__dots span {
+  width: 8px;
+  height: 8px;
+  border-radius: 4px;
+  background: var(--color-line-strong);
+}
+
+/* 누르면 다시 입력하는 값 (만 나이). 입력란과 같은 모양의 버튼이다. */
+.field--button {
+  width: 100%;
+  padding: 0 0 22px;
+  border: 0;
+  background: transparent;
+  color: inherit;
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+
+.field__value {
+  color: var(--color-text);
+  font-size: var(--text-value);
+  font-weight: var(--font-bold);
+}

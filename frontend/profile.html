@@ -1,0 +1,116 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <!-- 늘 밝은 화면으로 (2026-10-20). 휴대폰 브라우저의 "웹 페이지 어둡게"가 우리 색을 뒤집지 않게 한다 -->
+  <meta name="color-scheme" content="only light">
+  <title>재무정보 · 머니 to 홈</title>
+  <link rel="stylesheet" href="css/common.css?v=20261021-2">
+  <link rel="stylesheet" href="css/profile.css">
+</head>
+<body>
+  <!-- P-02 재무정보 입력. Figma "확정 목업 v3"의 P-02, 와이어프레임 설명서 5장.
+       값 세 개를 한 번에 하나씩 묻는다: 주민등록번호 앞 7자리(만 나이) → 연 소득 → 현재 보유자산 → 확인 -->
+  <!-- 웹(가로 1200px 이상)에서만 왼쪽 위에 보이는 로고. 안은 js/layout.js가 그린다. 모바일에는 없다. -->
+  <header class="header" id="header"></header>
+  <div class="top-space"></div>
+
+  <nav class="progress" aria-label="입력 단계">
+    <a class="progress__back" href="index.html" aria-label="이전 화면">‹</a>
+    <div class="progress__bars" aria-hidden="true">
+      <span class="progress__bar progress__bar--done"></span>
+      <span class="progress__bar"></span>
+      <span class="progress__bar"></span>
+      <span class="progress__bar"></span>
+    </div>
+    <span class="progress__label">1/4 재무정보</span>
+  </nav>
+
+  <form id="profile-form" class="form-page form-page--keys" novalidate>
+    <main class="page">
+      <header class="form-page__head">
+        <h1 class="title" id="profile-title">주민등록번호 앞 7자리를 알려 주세요</h1>
+        <p class="subtitle" id="profile-subtitle">만 나이를 계산하는 데만 쓰고 저장하지 않습니다.</p>
+      </header>
+      <!-- 다른 화면에서 보내져 왔을 때의 안내. guard.showNotice()가 채운다. -->
+      <p class="notice form-page__notice" id="step-notice" role="status" hidden></p>
+
+      <!-- 칸의 순서: 묻는 순서대로 위에서 아래. 하나를 넣으면 다음 칸이 그 아래에 열린다 (2026-10-21 팀장 요청) -->
+      <!-- 만 나이 (주민등록번호를 확인한 뒤에 보인다). 누르면 주민등록번호를 다시 입력한다. -->
+      <button type="button" class="field field--button" id="age-field" hidden>
+        <span class="field__label">만 나이</span>
+        <span class="field__row">
+          <span class="field__value" id="age-value"></span>
+          <span class="field__unit">세</span>
+        </span>
+        <span class="field__help"><span>주민등록번호로 계산한 값. 누르면 다시 입력</span></span>
+      </button>
+
+      <!-- 주민등록번호 앞 7자리. 이 값은 만 나이를 계산하는 데만 쓴다. 저장하지 않고 서버로 보내지 않는다 (NFR-25). -->
+      <div class="field" id="rrn-field">
+        <span class="field__label" id="rrn-label">주민등록번호 앞 7자리</span>
+        <div class="field__row rrn">
+          <input class="field__input rrn__front" id="rrn-front" type="text" inputmode="numeric" enterkeyhint="next" maxlength="6"
+                 autocomplete="off" placeholder="생년월일 6자리" aria-labelledby="rrn-label" aria-describedby="rrn-help">
+          <span class="rrn__dash" aria-hidden="true">-</span>
+          <input class="field__input rrn__back" id="rrn-back" type="text" inputmode="numeric" enterkeyhint="next" maxlength="1"
+                 autocomplete="off" aria-label="주민등록번호 뒤 첫째 자리" aria-describedby="rrn-help">
+          <span class="rrn__dots" aria-hidden="true">
+            <span></span><span></span><span></span><span></span><span></span><span></span>
+          </span>
+        </div>
+        <div class="field__help" id="rrn-help">
+          <span id="rrn-message">계산에는 쓰지 않고 화면에 표시만 합니다.</span>
+        </div>
+      </div>
+
+      <!-- 연 소득 (세전). 계산에 쓰지 않는다. -->
+      <div class="field" id="income-field" hidden>
+        <label class="field__label" for="income-input">연 소득 (세전)</label>
+        <div class="field__row">
+          <input class="field__input" id="income-input" type="text" inputmode="numeric" enterkeyhint="next" autocomplete="off"
+                 placeholder="예: 3,600" aria-describedby="income-help">
+          <span class="field__unit">만 원</span>
+        </div>
+        <div class="field__help" id="income-help">
+          <span id="income-message">세전 금액. 계산에는 쓰지 않습니다.</span>
+          <span class="field__read" id="income-read"></span>
+        </div>
+      </div>
+
+      <!-- 현재 보유자산. 세 값 가운데 계산에 쓰는 것은 이것 하나다. -->
+      <div class="field" id="assets-field" hidden>
+        <label class="field__label" for="assets-input">현재 보유자산</label>
+        <div class="field__row">
+          <input class="field__input" id="assets-input" type="text" inputmode="numeric" enterkeyhint="next" autocomplete="off"
+                 placeholder="예: 5,000" aria-describedby="assets-help">
+          <span class="field__unit">만 원</span>
+        </div>
+        <div class="field__help" id="assets-help">
+          <span id="assets-message">예금, 적금처럼 집을 살 때 쓸 수 있는 돈</span>
+          <span class="field__read" id="assets-read"></span>
+        </div>
+      </div>
+    </main>
+
+    <div class="bottom-action">
+      <p class="snackbar" id="save-error" role="alert" hidden>
+        입력한 정보를 저장하지 못했습니다. 인터넷 연결을 확인하고 다시 시도해 주세요.
+      </p>
+      <button type="submit" class="button button--primary" id="profile-submit" disabled>확인</button>
+    </div>
+  </form>
+
+  <!-- 공통 JavaScript. 모든 화면이 이 순서로 먼저 불러 쓴다. 그 아래에 화면의 파일을 둔다. -->
+  <script src="js/api.js"></script>
+  <script src="js/store.js"></script>
+  <script src="js/format.js?v=20261019-2"></script>
+  <script src="js/guard.js"></script>
+  <script src="js/layout.js?v=20261019-1"></script>
+  <script src="js/account.js?v=20261021-mp1"></script>
+  <script src="js/form-flow.js?v=20261021-2"></script>
+  <script src="js/profile.js?v=20261021-3"></script>
+  <script src="js/scrollbar.js?v=20261020-6"></script>
+</body>
+</html>

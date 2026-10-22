@@ -1,0 +1,132 @@
+/* 시나리오 탭의 그래프 (js/scenario-charts.js). 담당: 김해원
+   지도 화면(map.html)과 공유받은 화면(share.html)이 같이 쓴다. new-style.css에서 떼어 냈다 (2026-10-19).
+   새 스타일 색(--new-*)이 없는 화면에서는 common.css의 색으로 그린다 */
+
+/* ───────── 시나리오 탭의 그래프 (js/scenario-charts.js) ─────────
+   "조건 바꿔 보기" 위. 위아래 구분선은 창 끝까지, 그래프마다 옅은 회색 판 */
+.scenario-charts {
+  margin: 16px calc(-1 * var(--page-padding) - 4px) 0 calc(-1 * var(--page-padding) - 8px);
+  padding: 18px calc(var(--page-padding) + 4px) 0 calc(var(--page-padding) + 8px);
+  border-top: 1px solid var(--new-sheet-line, var(--color-line));
+}
+
+.scenario-charts[hidden] {
+  display: none;
+}
+
+.scenario-charts__title {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin: 0 0 10px;
+  color: var(--new-sheet-section, var(--color-text));
+  font-size: var(--text-help);
+  font-weight: var(--font-bold);
+}
+
+.scenario-charts__wait {
+  margin: 0 0 12px;
+  color: var(--color-text-hint);
+  font-size: 11px;
+}
+
+.scenario-chart-block {
+  margin-bottom: 18px;
+}
+
+/* 판: 그래프가 크게 보이게 안쪽 여백을 줄였다. 제목과 설명은 판 위(.scenario-chart-block) */
+.scenario-chart {
+  padding: 8px 6px 8px;
+  border-radius: 12px;
+  background: var(--new-control-bg, var(--color-bg-sub));
+}
+
+.scenario-chart__title {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin: 0 0 3px;
+  font-size: var(--text-label);
+  font-weight: var(--font-bold);
+}
+
+.scenario-chart__say {
+  margin: 0 0 8px;
+  color: var(--new-sheet-value, var(--color-text));
+  font-size: var(--text-badge);
+}
+
+.scenario-chart__say b {
+  color: var(--color-primary);
+}
+
+/* 같은 동 같은 면적 가운데 가장 비싼 곳 (scenario-charts.js). 막대도 같은 빨강 계열 */
+.scenario-chart__say b.scenario-chart__priciest {
+  color: var(--color-lack-text);
+}
+
+.scenario-chart svg {
+  display: block;
+  width: 100%;
+  height: auto;
+  overflow: visible;
+  font-family: var(--font-family);
+}
+
+/* 범례는 한 줄 (거래 · 평균가 · 쓸 수 있는 자금 · 지금 보유자산). 좁으면 글자 사이를 줄인다 */
+.scenario-chart__legend {
+  display: flex;
+  flex-wrap: nowrap;
+  gap: 8px;
+  margin-top: 6px;
+  color: var(--color-text-sub);
+  font-size: 10px;
+  letter-spacing: -0.2px;
+  white-space: nowrap;
+}
+
+.scenario-chart__legend i {
+  display: inline-block;
+  width: 12px;
+  height: 0;
+  margin-right: 4px;
+  border-top: 2px solid;
+  vertical-align: middle;
+}
+
+.scenario-chart__legend i.scenario-chart__dot {
+  width: 8px;
+  height: 8px;
+  border: 0;
+  border-radius: 50%;
+}
+
+.scenario-chart__src {
+  margin: 6px 0 0;
+  color: var(--color-text-hint);
+  font-size: 10px;
+}
+
+/* 그래프가 있으면 "조건 바꿔 보기" 위 선은 그래프 묶음 위 선과 겹치지 않게 그대로 둔다 */
+.scenario-charts + .scenario__change {
+  margin-top: 2px;
+}
+
+/* 그래프 판 안 위아래 여백 (2026-10-19). 그래프와 판 가장자리, 범례 사이를 띄운다 */
+.scenario-chart {
+  padding: 18px 8px 14px;
+}
+
+.scenario-chart svg + .scenario-chart__legend,
+.scenario-chart svg + .scenario-chart__src {
+  margin-top: 10px;
+}
+
+.scenario-chart-block {
+  margin-bottom: 24px;
+}
+
+/* 그래프 위 한 줄 설명: 금액·순위(굵은 글자)는 중간에서 끊지 않고, 줄을 바꿔야 하면 띄어쓰기에서만 */
+.scenario-chart__say {
+  word-break: keep-all;
+}

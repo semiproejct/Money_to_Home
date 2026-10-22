@@ -1,0 +1,139 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <!-- 늘 밝은 화면으로 (2026-10-20). 휴대폰 브라우저의 "웹 페이지 어둡게"가 우리 색을 뒤집지 않게 한다 -->
+  <meta name="color-scheme" content="only light">
+  <title>대출상품 · 머니 to 홈</title>
+  <link rel="stylesheet" href="css/common.css?v=20261021-2">
+  <link rel="stylesheet" href="css/loan.css?v=20261020-90">
+  <link rel="stylesheet" href="css/glossary.css">
+</head>
+<body>
+  <!-- P-03 대출상품 선택. 와이어프레임 설명서 6장.
+       상품 두 개와 "대출 없이 계산" 가운데 하나를 고른다. 상품을 고르면 상환 기간까지 골라야 "다음"이 켜진다. -->
+  <!-- 웹(가로 1200px 이상)에서만 왼쪽 위에 보이는 로고. 안은 js/layout.js가 그린다. 모바일에는 없다. -->
+  <header class="header" id="header"></header>
+  <div class="top-space"></div>
+
+  <nav class="progress" aria-label="입력 단계">
+    <a class="progress__back" href="profile.html" aria-label="이전 화면">‹</a>
+    <div class="progress__bars" aria-hidden="true">
+      <span class="progress__bar progress__bar--done"></span>
+      <span class="progress__bar progress__bar--done"></span>
+      <span class="progress__bar"></span>
+      <span class="progress__bar"></span>
+    </div>
+    <span class="progress__label">2/4 대출상품</span>
+  </nav>
+
+  <form id="loan-form" class="form-page" novalidate>
+    <main class="page">
+      <header class="form-page__head">
+        <h1 class="title">대출 상품을 골라 주세요</h1>
+        <p class="subtitle">두 상품 중 하나를 고르거나 대출 없이 계산할 수 있습니다.</p>
+      </header>
+      <!-- 다른 화면에서 보내져 왔을 때의 안내. guard.showNotice()가 채운다. -->
+      <p class="notice form-page__notice" id="step-notice" role="status" hidden></p>
+
+      <div class="loan-options" role="radiogroup" aria-label="대출 방법">
+        <!-- 상품을 불러오는 동안의 자리 표시 (P-03 ⑦) -->
+        <div class="loan-skeleton" id="product-loading" aria-hidden="true">
+          <div class="loan-skeleton__card"></div>
+          <div class="loan-skeleton__card"></div>
+        </div>
+
+        <!-- 상품을 불러오지 못했을 때 (P-03 ⑧) -->
+        <div class="notice notice--error loan-load-error" id="product-error" role="alert" hidden>
+          <span>대출 상품을 불러오지 못했습니다. 잠시 후 다시 시도해 주세요.</span>
+          <button type="button" class="link-button" id="product-retry">다시 시도</button>
+        </div>
+
+        <!-- 상품 카드. loan.js가 서버에서 받은 상품으로 채운다 (A-01). -->
+        <div id="product-list"></div>
+
+        <!-- 대출 없이 계산. 서버 값이 필요 없어 처음부터 보인다 (C-13). -->
+        <label class="loan-card" id="none-card">
+          <input type="radio" name="loan" value="none">
+          <span class="loan-card__head">
+            <span class="loan-card__dot" aria-hidden="true"></span>
+            <span class="loan-card__name">대출 없이 계산</span>
+          </span>
+          <span class="loan-card__desc">보유자산과 저축만으로 목표할 수 있는 집을 찾습니다.</span>
+        </label>
+      </div>
+
+      <!-- 상환 기간. 고른 상품의 선택지만 보인다. 기본 선택이 없다. -->
+      <fieldset class="years" id="years-field" hidden>
+        <legend class="field__label">상환 기간</legend>
+        <div class="years__options" id="years-options"></div>
+      </fieldset>
+    </main>
+
+    <div class="bottom-action">
+      <!-- 결과. 서버가 계산한 값을 보여 주기만 한다 (A-03). -->
+      <section class="loan-result" id="loan-result" aria-live="polite" hidden>
+        <div class="loan-result__rows" id="result-rows">
+          <div class="loan-result__row">
+            <span>예상 최대 대출금액</span>
+            <strong id="result-max"></strong>
+          </div>
+          <div class="loan-result__row">
+            <span id="result-monthly-label">예상 월 상환액</span>
+            <strong id="result-monthly"></strong>
+          </div>
+        </div>
+        <p class="loan-result__title" id="result-title" hidden>대출 없이 계산</p>
+        <p class="loan-result__note" id="result-note"></p>
+      </section>
+
+      <!-- 계산하지 못했을 때 (P-03 ⑨) -->
+      <div class="notice notice--error loan-calc-error" id="calc-error" role="alert" hidden>
+        <span>예상 대출금액을 계산하지 못했습니다.</span>
+        <button type="button" class="link-button" id="calc-retry">다시 시도</button>
+      </div>
+
+      <p class="snackbar" id="loan-error" role="alert" hidden></p>
+      <p class="bottom-action__hint" id="loan-hint">상품과 상환 기간, 또는 대출 없이 계산을 골라 주세요.</p>
+      <button type="submit" class="button button--primary" id="loan-submit" disabled>다음</button>
+    </div>
+  </form>
+
+  <!-- 조건 자세히 (P-03 ⑥). 아래에서 올라오는 창이다. 열어도 상품이 골라지지 않는다. -->
+  <div class="sheet-backdrop" id="sheet-backdrop" hidden></div>
+  <section class="sheet" id="terms-sheet" role="dialog" aria-modal="true" aria-labelledby="sheet-title" hidden>
+    <div class="sheet__handle" aria-hidden="true"></div>
+    <header class="sheet__head">
+      <h2 class="sheet__title" id="sheet-title"></h2>
+      <button type="button" class="sheet__close" id="sheet-close" aria-label="닫기">×</button>
+    </header>
+    <dl class="sheet__rows">
+      <div class="sheet__row"><dt>취급 기관</dt><dd id="sheet-institution"></dd></div>
+      <div class="sheet__row"><dt>최대 한도</dt><dd id="sheet-limit"></dd></div>
+      <div class="sheet__row"><dt>주택가격 대비 대출 비율</dt><dd id="sheet-ltv"></dd></div>
+      <div class="sheet__row"><dt>대상 주택 가격</dt><dd id="sheet-cap"></dd></div>
+      <div class="sheet__row"><dt>금리</dt><dd id="sheet-rate"></dd></div>
+      <div class="sheet__row"><dt>상환 기간</dt><dd id="sheet-years"></dd></div>
+    </dl>
+    <h3 class="sheet__subtitle">자격 조건</h3>
+    <ul class="sheet__list" id="sheet-eligibility"></ul>
+    <p class="notice">자격 조건은 안내용입니다. 이 서비스는 자격을 확인하지 않고, 충족한다고 가정해 계산합니다.</p>
+    <footer class="sheet__foot">
+      <span id="sheet-date"></span>
+      <a class="sheet__link" id="sheet-source" target="_blank" rel="noopener noreferrer">공식 상품 안내 열기</a>
+    </footer>
+  </section>
+
+  <!-- 공통 JavaScript. 모든 화면이 이 순서로 먼저 불러 쓴다. 그 아래에 화면의 파일을 둔다. -->
+  <script src="js/api.js"></script>
+  <script src="js/store.js"></script>
+  <script src="js/format.js?v=20261019-2"></script>
+  <script src="js/guard.js"></script>
+  <script src="js/layout.js?v=20261019-1"></script>
+  <script src="js/account.js?v=20261021-mp1"></script>
+  <script src="js/glossary.js?v=20261014-1"></script>
+  <script src="js/loan.js?v=20261014-4"></script>
+  <script src="js/scrollbar.js?v=20261020-6"></script>
+</body>
+</html>

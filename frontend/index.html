@@ -1,0 +1,116 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <!-- 늘 밝은 화면으로 (2026-10-20). 휴대폰 브라우저의 "웹 페이지 어둡게"가 우리 색을 뒤집지 않게 한다 -->
+  <meta name="color-scheme" content="only light">
+  <title>머니 to 홈</title>
+  <!-- 모든 화면이 common.css를 먼저, 화면의 CSS를 그 뒤에 불러 쓴다. -->
+  <link rel="stylesheet" href="css/common.css?v=20261021-2">
+  <link rel="stylesheet" href="css/index.css?v=20261020-90">
+  <!-- 로그인한 시작 화면: 재무정보 3칸 + 찜한 시나리오 (2026-10-21, 박채은) -->
+  <link rel="stylesheet" href="css/start-profiles.css?v=20261021-mp3">
+</head>
+<body>
+  <!-- 스플래시. 탭을 처음 열 때만 1초 동안 화면 전체를 덮었다가 사라진다 (js/splash.js). 처음에는 숨겨 둔다.
+       꾸밈이므로 화면 읽기 프로그램에는 읽히지 않게 한다. -->
+  <div class="splash" id="splash" aria-hidden="true" hidden>
+    <img class="splash__logo" src="img/logo-splash.svg?v=20261019-1" alt="">
+    <p class="splash__name">머니 <span class="splash__to">to</span> 홈</p>
+  </div>
+
+  <!-- P-01 시작 화면. Figma "확정 목업 v3"의 P-01 ① ~ ⑤. 모바일에는 헤더가 없다.
+       처음에는 ① 기본(로그인하지 않음)으로 그려 두고, 로그인 상태를 물어본 뒤 js/index.js가 ② ~ ⑤로 바꾼다. -->
+  <!-- 웹(가로 1200px 이상)에서만 왼쪽 위에 보이는 로고. 안은 js/layout.js가 그린다. 모바일에는 없다. -->
+  <header class="header" id="header"></header>
+  <div class="top-space"></div>
+
+  <div class="start-layout">
+    <main class="page start">
+      <!-- ⑤ 로그인 시간이 끝남. 로고 자리에 둔다 -->
+      <p class="notice start__expired" id="start-expired" hidden>30분 동안 사용하지 않아 로그아웃되었습니다. 입력하던 값은 이 기기에 남아 있습니다.</p>
+      <img class="start__logo" id="start-logo" src="img/logo.svg?v=20261019-1" alt="">
+      <!-- 로그인: 오른쪽 위 "찜한 시나리오 보기 ↓" (2026-10-21) -->
+      <div class="start-switch-row" id="start-switch-row" hidden>
+        <button type="button" class="start-switch" id="start-to-saved">찜한 시나리오 보기 ↓</button>
+      </div>
+
+      <h1 class="title title--display" id="start-title">내 자산과 저축, 대출로<br>목표할 수 있는 집을<br>지도에서 찾아보세요</h1>
+      <p class="subtitle" id="start-subtitle">광주 5개 구 아파트의 최근 1년 실거래가로 계산합니다.</p>
+
+      <!-- 로그인: 재무정보 3칸 (2026-10-21. 예전의 ② 저장한 정보 일곱 줄 자리). js/start-profiles.js가 A-29로 채운다 -->
+      <div id="start-profiles-part" hidden>
+        <div id="start-profiles"></div>
+      </div>
+
+      <!-- ④ 저장한 정보를 불러오지 못함 -->
+      <p class="notice notice--error start__error" id="start-error" role="alert" hidden>인터넷 연결을 확인하고 다시 시도해 주세요.</p>
+
+      <ol class="steps" id="start-steps">
+        <li class="steps__item">
+          <span class="steps__number">1</span>
+          <span class="steps__text">
+            <span class="steps__name">내 자금 입력</span>
+            <span class="steps__desc">보유자산과 매달 모을 수 있는 금액</span>
+          </span>
+        </li>
+        <li class="steps__item">
+          <span class="steps__number">2</span>
+          <span class="steps__text">
+            <span class="steps__name">대출 상품 선택</span>
+            <span class="steps__desc">상품 조건으로 계산하거나 대출 없이 계산</span>
+          </span>
+        </li>
+        <li class="steps__item">
+          <span class="steps__number">3</span>
+          <span class="steps__text">
+            <span class="steps__name">지도에서 확인</span>
+            <span class="steps__desc">지금 가능, 기간 내 가능, 자금 부족</span>
+          </span>
+        </li>
+      </ol>
+
+      <p class="notice" id="start-notice">
+        집값을 예측하지 않습니다. 대출 금액은 추정치이며 실제 한도는 금융기관 심사로 결정됩니다.
+        지도의 아파트는 매물이 아니라 실거래 기록입니다.
+      </p>
+    </main>
+
+    <div class="bottom-action">
+      <a class="button button--primary" id="start-button" href="profile.html">로그인 없이 시작하기</a>
+      <button type="button" class="button button--primary" id="start-retry" hidden>다시 시도</button>
+      <!-- 로그인: 고른 재무정보로 지도 보기 (2026-10-21) -->
+      <button type="button" class="button button--primary start__go" id="start-go" hidden>선택한 정보로 지도 보기</button>
+      <!-- ④ 불러오지 못함: "새로 입력하기" -->
+      <div class="start__links">
+        <button type="button" class="link-button start__restart" id="start-restart" hidden>새로 입력하기</button>
+      </div>
+      <!-- ① 로그인하지 않았을 때만 -->
+      <p class="start__auth" id="start-auth">
+        <a class="link-button" href="login.html">로그인</a>
+        <span class="start__divider" aria-hidden="true"></span>
+        <a class="link-button" href="signup.html">회원가입</a>
+      </p>
+      <p class="start__hint" id="start-hint">로그인하면 재무정보를 저장하고<br>마음에 드는 아파트를 찜할 수 있습니다.</p>
+    </div>
+  </div>
+
+  <!-- 로그인: 재무정보 칸 아래로 스크롤하면 찜한 시나리오 (2026-10-21). 마이페이지의 [찜한 시나리오]는 index.html#saved -->
+  <div class="saved-band" id="saved-band" aria-hidden="true" hidden></div>
+  <section class="page saved-section" id="saved" aria-label="찜한 시나리오" hidden></section>
+  <div id="start-layer"></div>
+
+  <!-- 공통 JavaScript. 모든 화면이 이 순서로 먼저 불러 쓴다. 그 아래에 화면의 파일을 둔다. -->
+  <script src="js/api.js"></script>
+  <script src="js/store.js"></script>
+  <script src="js/format.js?v=20261019-2"></script>
+  <script src="js/guard.js"></script>
+  <script src="js/layout.js?v=20261019-1"></script>
+  <script src="js/account.js?v=20261021-mp1"></script>
+  <script src="js/splash.js?v=20261019-1"></script>
+  <script src="js/start-profiles.js?v=20261021-mp2"></script>
+  <script src="js/index.js?v=20261021-mp1"></script>
+  <script src="js/scrollbar.js?v=20261020-6"></script>
+</body>
+</html>
