@@ -2,6 +2,8 @@
 
 내 자산·저축·대출로 목표할 수 있는 집을 지도에서 찾는 내 집 마련 시뮬레이터
 
+<img src="docs/images/hero.png" alt="머니 to 홈 웹과 모바일 화면">
+
 **바로 써 보기: https://money-to-home.onrender.com/**
 
 <img src="docs/images/qr.png" width="160" alt="머니 to 홈 접속 QR코드">
