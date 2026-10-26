@@ -1,0 +1,101 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="color-scheme" content="only light">
+  <title>{{code}} {{title}} · 머니 to 홈</title>
+  <link rel="stylesheet" href="/css/common.css?v=20261021-2">
+  <style>
+    /* 오류 화면 (2026-10-26). 주소창으로 연 화면에서 오류가 나면 backend/errors.py가 이 파일을 채워 보낸다.
+       API(/api/...)는 지금처럼 {"detail": ...} JSON으로 답한다. 배율은 100% (지도 화면의 90%와 무관) */
+    html, body { height: 100%; }
+    body.error-page {
+      margin: 0;
+      min-height: 100dvh;
+      display: flex;
+      flex-direction: column;
+      background: var(--color-bg);
+      color: var(--color-text);
+      font-family: var(--font-family);
+    }
+    .error-page__logo {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 20px 24px;
+      color: var(--color-text);
+      font-size: 20px;
+      font-weight: var(--font-bold);
+      text-decoration: none;
+    }
+    .error-page__logo img { width: 36px; height: 36px; }
+    .error-page__logo em { color: var(--color-brand-gold); font-style: normal; font-size: 0.8em; }
+    .error-page__main {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 0 24px 80px;
+      text-align: center;
+    }
+    .error-page__code {
+      margin: 0;
+      font-size: clamp(120px, 30vw, 260px);
+      font-weight: var(--font-bold);
+      line-height: 1;
+      letter-spacing: -0.04em;
+      color: var(--color-primary);
+    }
+    .error-page__title {
+      margin: 16px 0 0;
+      font-size: clamp(22px, 5vw, 30px);
+      font-weight: var(--font-bold);
+    }
+    .error-page__message {
+      margin: 12px 0 0;
+      max-width: 420px;
+      font-size: 16px;
+      line-height: 1.6;
+      color: var(--color-text-sub);
+    }
+    .error-page__actions {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 8px;
+      margin-top: 28px;
+    }
+    .error-page__button {
+      min-width: 96px;
+      padding: 8px 16px;
+      border: 1px solid var(--color-primary);
+      border-radius: 8px;
+      background: var(--color-primary);
+      color: var(--color-on-primary);
+      font: inherit;
+      font-size: 14px;
+      font-weight: var(--font-medium);
+      text-decoration: none;
+      cursor: pointer;
+    }
+    .error-page__button--ghost {
+      background: transparent;
+      color: var(--color-primary);
+    }
+  </style>
+</head>
+<body class="error-page">
+  <a class="error-page__logo" href="/"><img src="/img/logo.svg" alt="">머니 <em>to</em> 홈</a>
+  <main class="error-page__main">
+    <p class="error-page__code">{{code}}</p>
+    <h1 class="error-page__title">{{title}}</h1>
+    <p class="error-page__message">{{message}}</p>
+    <div class="error-page__actions">
+      <a class="error-page__button" href="{{action_href}}">{{action_label}}</a>
+      <button class="error-page__button error-page__button--ghost" type="button" onclick="history.length > 1 ? history.back() : location.assign('/')">이전 화면</button>
+    </div>
+  </main>
+</body>
+</html>
