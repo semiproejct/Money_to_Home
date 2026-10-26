@@ -155,7 +155,7 @@ kakao.js:108 Uncaught TypeError: Cannot read properties of undefined (reading 'x
 
 ### 해결 결과
 
-- 이후 충돌은 PR 단계에서 잡혔고, `develop`에 충돌 표시가 들어간 일은 다시 없었습니다. 전체 PR은 160개 이상 병합했습니다.
+- 이후 충돌은 PR 단계에서 잡혔고, `develop`에 충돌 표시가 들어간 일은 다시 없었습니다. 전체 PR은 164개 병합했습니다 (2026-10-26 기준).
 
 ### 재발 방지 방안
 

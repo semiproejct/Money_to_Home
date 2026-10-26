@@ -4,6 +4,7 @@
 | --- | --- |
 | 용도 | 설계 문서 01 ~ 05를 처음 보는 사람도 이해할 수 있게 풀어 쓴 요약 |
 | 작성일 | 2026-10-11 |
+| 최종 상태 (2026-10-26) | 개발 시작 전 설계 단계의 기록이다. 완성 후 실제 값은 API 35개, 표 10개(재무정보 회원당 최대 3칸), 아파트 1,055곳 · 거래 17,268건, 테스트 333개이며 Render + Aiven MySQL로 배포했다 (https://money-to-home.onrender.com/). 최종 구조는 `docs/submission/01_architecture.md`를 따른다. |
 | 원문 | `01_project_overview.md`, `02_requirements.md` (v1.10), `03_ui_design.md` (v1.5), `03_ui_design_wireframe.md`, `04_database_design.md` (v0.3), `05_api_spec.md` (v0.2), `06_architecture.md` (v0.2) |
 | 주의 | 이 문서는 요약이다. 내용이 다르면 원문을 따른다. 05번 문서는 아직 초안이다. |
 
