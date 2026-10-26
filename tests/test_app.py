@@ -110,3 +110,12 @@ def test_unknown_api_keeps_json_even_from_browser(client):
     response = client.get("/api/nothing-here", headers={"Accept": "text/html"})
     assert response.status_code == 404
     assert response.json() == {"detail": "찾는 것이 없습니다."}
+
+
+def test_every_error_page_renders(client):
+    from backend.errors import PAGE_TEXT
+    for code, (title, *_rest) in PAGE_TEXT.items():
+        response = client.get(f"/error-preview/{code}")
+        assert response.status_code == code
+        assert title in response.text
+        assert "{{" not in response.text

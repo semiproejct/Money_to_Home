@@ -8,6 +8,7 @@
 """
 import html
 import logging
+import os
 from pathlib import Path
 
 from fastapi import FastAPI, Request
@@ -34,9 +35,16 @@ PAGE_TEXT = {
     403: ("볼 수 없는 화면입니다", "이 화면을 볼 권한이 없습니다.", "/", "처음으로"),
     404: ("화면을 찾을 수 없습니다", "주소가 바뀌었거나 없는 화면입니다. 주소를 다시 확인해 주세요.", "/", "처음으로"),
     405: ("허용되지 않는 요청입니다", "이 주소로는 할 수 없는 요청입니다.", "/", "처음으로"),
+    408: ("요청 시간이 지났습니다", "응답을 기다리다 시간이 지났습니다. 다시 시도해 주세요.", "/", "처음으로"),
+    429: ("요청이 너무 많습니다", "잠시 기다린 뒤 다시 시도해 주세요.", "/", "처음으로"),
     500: ("서버에 문제가 생겼습니다", "잠시 후 다시 시도해 주세요. 문제가 계속되면 팀에 알려 주세요.", "/", "처음으로"),
+    502: ("서버가 응답하지 않습니다", "서버를 다시 켜는 중일 수 있습니다. 잠시 후 다시 시도해 주세요.", "/", "처음으로"),
     503: ("잠시 쓸 수 없습니다", "서버를 점검하고 있습니다. 잠시 후 다시 시도해 주세요.", "/", "처음으로"),
+    504: ("응답이 늦어지고 있습니다", "서버의 응답이 늦습니다. 잠시 후 다시 시도해 주세요.", "/", "처음으로"),
 }
+
+# 오류 화면 미리보기 /error-preview/404 (로컬에서만). Render는 RENDER 환경 변수를 넣으므로 배포 서버에서는 꺼진다
+PREVIEW_ON = not os.environ.get("RENDER")
 
 
 def _wants_page(request: Request) -> bool:
@@ -94,6 +102,11 @@ def _validation_field(error: dict) -> str | None:
 
 
 def register_error_handlers(app: FastAPI) -> None:
+    if PREVIEW_ON:
+        @app.get("/error-preview/{code}", include_in_schema=False)
+        async def preview_error_page(code: int):
+            return _error_page(code if code in PAGE_TEXT else 404)
+
     @app.exception_handler(ApiError)
     async def handle_api_error(request: Request, exc: ApiError):
         return JSONResponse(status_code=exc.status_code, content=_body(exc.detail, exc.field))
