@@ -89,3 +89,24 @@ def test_loan_choice_needs_finance_first(client):
     response = client.put("/api/profile/loan", json=body)
     assert response.status_code == 422
     assert response.json() == {"detail": "재무정보를 먼저 입력해 주세요."}
+
+
+def test_unknown_page_shows_error_page_in_browser(client):
+    response = client.get("/nothing-here.html", headers={"Accept": "text/html"})
+    assert response.status_code == 404
+    assert response.headers["content-type"].startswith("text/html")
+    assert "404" in response.text
+    assert "화면을 찾을 수 없습니다" in response.text
+    assert "{{" not in response.text
+
+
+def test_unknown_page_without_html_accept_keeps_json(client):
+    response = client.get("/nothing-here.html")
+    assert response.status_code == 404
+    assert response.json() == {"detail": "찾는 것이 없습니다."}
+
+
+def test_unknown_api_keeps_json_even_from_browser(client):
+    response = client.get("/api/nothing-here", headers={"Accept": "text/html"})
+    assert response.status_code == 404
+    assert response.json() == {"detail": "찾는 것이 없습니다."}
