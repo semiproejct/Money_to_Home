@@ -15,8 +15,8 @@
       min-height: 100dvh;
       display: flex;
       flex-direction: column;
-      background: var(--color-primary);
-      color: var(--color-on-primary);
+      background: var(--color-bg);
+      color: var(--color-text);
       font-family: var(--font-family);
     }
     .error-page__logo {
@@ -24,7 +24,7 @@
       align-items: center;
       gap: 6px;
       padding: 20px 24px;
-      color: var(--color-on-primary);
+      color: var(--color-text);
       font-size: 20px;
       font-weight: var(--font-bold);
       text-decoration: none;
@@ -46,7 +46,7 @@
       font-weight: var(--font-bold);
       line-height: 1;
       letter-spacing: -0.04em;
-      color: #ffffff;
+      color: var(--color-primary);
     }
     .error-page__title {
       margin: 16px 0 0;
@@ -58,7 +58,7 @@
       max-width: 420px;
       font-size: 16px;
       line-height: 1.6;
-      opacity: 0.85;
+      color: var(--color-text-sub);
     }
     .error-page__actions {
       display: flex;
@@ -70,10 +70,10 @@
     .error-page__button {
       min-width: 140px;
       padding: 14px 24px;
-      border: 2px solid #ffffff;
+      border: 2px solid var(--color-primary);
       border-radius: 12px;
-      background: #ffffff;
-      color: var(--color-primary);
+      background: var(--color-primary);
+      color: var(--color-on-primary);
       font: inherit;
       font-size: 16px;
       font-weight: var(--font-bold);
@@ -82,12 +82,12 @@
     }
     .error-page__button--ghost {
       background: transparent;
-      color: #ffffff;
+      color: var(--color-primary);
     }
   </style>
 </head>
 <body class="error-page">
-  <a class="error-page__logo" href="/"><img src="/img/logo-plain.svg" alt="">머니 <em>to</em> 홈</a>
+  <a class="error-page__logo" href="/"><img src="/img/logo.svg" alt="">머니 <em>to</em> 홈</a>
   <main class="error-page__main">
     <p class="error-page__code">{{code}}</p>
     <h1 class="error-page__title">{{title}}</h1>
