@@ -6,7 +6,7 @@
 | --- | --- |
 | 운영 주소 | https://money-to-home.onrender.com/ (Render 무료 서버 + Aiven 무료 MySQL) |
 | 로컬 주소 | http://localhost:8000 |
-| 기준 | `develop` 브랜치, 2026-10-26 |
+| 기준 | `main` 브랜치 (기본 브랜치 · 배포 브랜치), 2026-10-26 |
 
 ---
 
@@ -28,7 +28,6 @@ Node.js는 쓰지 않습니다. 화면은 서버(FastAPI)가 `frontend/` 폴더�
 ```
 git clone https://github.com/semiproejct/Money_to_Home.git
 cd Money_to_Home
-git switch develop
 ```
 
 ### 3. 환경 변수 (`.env`)
@@ -221,9 +220,9 @@ python data/load_trades.py data/collected
 ## ⑦ 재배포 또는 업데이트
 
 ```
-feature 브랜치에서 수정 → PR (1명 이상 승인) → develop 머지
+main에서 feature 브랜치를 만들어 수정
 → 로컬에서 pytest · 화면 확인
-→ develop을 main에 PR로 머지
+→ main으로 PR (1명 이상 승인) → 머지
 → Render가 main을 자동 재빌드 · 재실행
 → /api/health 확인 → 화면 확인
 ```

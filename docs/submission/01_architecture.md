@@ -7,7 +7,7 @@
 | 기간 | 2026.10.06 ~ 10.21 (16일) |
 | 서비스 주소 | https://money-to-home.onrender.com/ |
 | 저장소 | https://github.com/semiproejct/Money_to_Home |
-| 기준 | `develop` 브랜치, 2026-10-26 |
+| 기준 | `main` 브랜치 (기본 브랜치 · 배포 브랜치), 2026-10-26 |
 
 ---
 
